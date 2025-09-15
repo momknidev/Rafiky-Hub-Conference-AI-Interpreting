@@ -10,11 +10,14 @@ import { generateToken } from '@/utils/generateToken';
 import { useChannel } from '@/context/ChannelContext';
 import { useParams } from 'next/navigation';
 import { flagsMapping } from '@/constants/flagsMapping';
+import { LanguageBotMap, defaultData } from '@/constants/captionUIDs';
+import { usePrototype } from '@/hooks/usePrototype';
+import { v4 as uuidv4 } from 'uuid';
 
 // 🚨 CRITICAL: Browser compatibility detection
 const getBrowserInfo = () => {
   if (typeof navigator === 'undefined') return { name: 'unknown', version: '0', supported: false };
-  
+
   const userAgent = navigator.userAgent;
   let name = 'unknown';
   let version = '0';
@@ -71,9 +74,9 @@ const getBrowserInfo = () => {
 
   const finalSupported = supported && hasWebRTC && hasMediaDevices;
 
-  return { 
-    name, 
-    version, 
+  return {
+    name,
+    version,
     supported: finalSupported,
     hasWebRTC,
     hasMediaDevices,
@@ -84,18 +87,18 @@ const getBrowserInfo = () => {
 // 🚨 CRITICAL: WebRTC Polyfills
 const setupWebRTCPolyfills = () => {
   if (!window.RTCPeerConnection) {
-    window.RTCPeerConnection = 
-      window.webkitRTCPeerConnection || 
-      window.mozRTCPeerConnection || 
+    window.RTCPeerConnection =
+      window.webkitRTCPeerConnection ||
+      window.mozRTCPeerConnection ||
       window.msRTCPeerConnection;
   }
 
   if (navigator.mediaDevices && !navigator.mediaDevices.getUserMedia) {
-    navigator.mediaDevices.getUserMedia = function(constraints) {
-      const getUserMedia = 
-        navigator.getUserMedia || 
-        navigator.webkitGetUserMedia || 
-        navigator.mozGetUserMedia || 
+    navigator.mediaDevices.getUserMedia = function (constraints) {
+      const getUserMedia =
+        navigator.getUserMedia ||
+        navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia ||
         navigator.msGetUserMedia;
 
       if (!getUserMedia) {
@@ -116,9 +119,9 @@ const setupWebRTCPolyfills = () => {
 // 🚨 CRITICAL: Multi-CDN Agora loader with fallbacks
 const loadAgoraSDKWithFallbacks = async () => {
   if (typeof window === 'undefined') return null;
-  
+
   setupWebRTCPolyfills();
-  
+
   const cdnUrls = [
     'https://download.agora.io/sdk/release/AgoraRTC_N-4.20.0.js',
     'https://cdn.jsdelivr.net/npm/agora-rtc-sdk-ng@4.20.0/AgoraRTC_N.js',
@@ -139,7 +142,7 @@ const loadAgoraSDKWithFallbacks = async () => {
   for (let i = 0; i < cdnUrls.length; i++) {
     try {
       console.log(`🔄 Trying CDN ${i + 1}/${cdnUrls.length}: ${cdnUrls[i]}`);
-      
+
       await new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = cdnUrls[i];
@@ -147,7 +150,7 @@ const loadAgoraSDKWithFallbacks = async () => {
         script.onerror = reject;
         script.timeout = 10000;
         document.head.appendChild(script);
-        
+
         setTimeout(() => {
           script.onerror?.(new Error('CDN timeout'));
         }, 10000);
@@ -179,12 +182,12 @@ const Listner = () => {
   const { language } = params;
   const [browserInfo, setBrowserInfo] = useState(null);
   const [showBrowserWarning, setShowBrowserWarning] = useState(false);
-
+  const protypeRef = usePrototype();
   // 🚨 CORE STATE
   const [isConnected, setIsConnected] = useState(false);
   const [isLive, setIsLive] = useState(false);
   const [listenerCount, setListenerCount] = useState(0);
-  const [volume, setVolume] = useState(75);
+  const [volume, setVolume] = useState(750);
   const [isMuted, setIsMuted] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -207,6 +210,13 @@ const Listner = () => {
   const [lastKnownBroadcasterState, setLastKnownBroadcasterState] = useState(null);
   const [broadcasterOnline, setBroadcasterOnline] = useState(false);
   const { channelName, setLanguage } = useChannel();
+  const [subTitle, setSubtitles] = useState([]);
+  const subTitleRef = useRef(uuidv4());
+  const isPlayingRef = useRef(false);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
 
 
   useEffect(() => {
@@ -230,15 +240,15 @@ const Listner = () => {
   const reconnectTimeoutRef = useRef(null);
   const heartbeatIntervalRef = useRef(null);
   const startedAlreadyRef = useRef(false);
-  
+
 
   // 🚨 CRITICAL: Browser compatibility check on mount
   useEffect(() => {
     const browser = getBrowserInfo();
     setBrowserInfo(browser);
-    
+
     console.log('🌐 Browser detected:', browser);
-    
+
     if (!browser.supported) {
       setShowBrowserWarning(true);
       setConnectionError(`Browser compatibility issue: ${browser.name} ${browser.version} may not be fully supported`);
@@ -253,14 +263,14 @@ const Listner = () => {
       try {
         setConnectionError(null);
         console.log('🚨 UNIVERSAL: Loading Agora SDK with fallbacks...');
-        
+
         const sdk = await loadAgoraSDKWithFallbacks();
-        
+
         if (isMounted) {
           setAgoraRTC(sdk);
           setIsSDKLoading(false);
           console.log('✅ Agora SDK loaded successfully');
-          
+
           if (showBrowserWarning) {
             setShowBrowserWarning(false);
             setConnectionError(null);
@@ -289,14 +299,14 @@ const Listner = () => {
     try {
       const res = await getBroadcastInfoRequest(channelName);
       const data = res.data?.data;
-      
+
       if (data) {
         const currentListeners = data.audience_total || 0;
         const hostOnline = data.host_online === true;
-        
+
         setListenerCount(currentListeners);
         setBroadcasterOnline(hostOnline);
-        
+
         // Auto-resume logic
         if (hostOnline && isLive && remoteAudioTrack && wasPlayingBeforeDisconnect && !isPlaying) {
           try {
@@ -352,27 +362,27 @@ const Listner = () => {
           throw new Error(`Missing Agora configuration`);
         }
 
-        await client.leave().catch(() => {});
+        await client.leave().catch(() => { });
         await client.setClientRole('audience');
         await client.join(APP_ID, CHANNEL_NAME, TOKEN);
-        
+
         setIsConnected(true);
         setIsReconnecting(false);
         setReconnectCount(0);
         setConnectionError(null);
-        
+
         toast.success('Reconnected successfully!', { id: 'reconnected' });
 
       } catch (error) {
         console.error(`Reconnection ${reconnectCount + 1} failed:`, error);
         setConnectionError(`Reconnection failed: ${error.message}`);
-        
+
         if (reconnectCount < maxReconnectAttempts - 1) {
           attemptReconnection();
         } else {
           setIsReconnecting(false);
           setConnectionError('Connection failed after maximum attempts. Please refresh the page.');
-          toast.error('Connection failed. Please refresh the page.', { 
+          toast.error('Connection failed. Please refresh the page.', {
             id: 'reconnect-failed',
             action: {
               label: 'Refresh',
@@ -391,12 +401,12 @@ const Listner = () => {
     if (isPlaying || wasPlayingBeforeDisconnect) {
       setWasPlayingBeforeDisconnect(true);
     }
-    
+
     setIsConnected(false);
     setIsLive(false);
     setIsPlaying(false);
     setConnectionError('Connection lost - attempting to reconnect...');
-    
+
     if (remoteAudioTrack) {
       remoteAudioTrack.stop();
       setRemoteAudioTrack(null);
@@ -424,20 +434,20 @@ const Listner = () => {
 
     // Enhanced event handlers
     agoraClient.on('user-published', async (user, mediaType) => {
-      console.log("user-published", wasPlayingBeforeDisconnect,isPlaying);
+      console.log("user-published", wasPlayingBeforeDisconnect, isPlaying);
       if (mediaType === 'audio' && isComponentMountedRef.current) {
         try {
           await agoraClient.subscribe(user, mediaType);
           const audioTrack = user.audioTrack;
           const track = audioTrack.getMediaStreamTrack();
-          
+
           audioTrack.setVolume(isMuted ? 0 : volume);
-          
+
           setRemoteMediaStreamTrack(track);
           setRemoteAudioTrack(audioTrack);
           setIsLive(true);
           setConnectionError(null);
-          
+
           // Enhanced auto-resume
           // if (wasPlayingBeforeDisconnect || isPlaying) {
           if (startedAlreadyRef.current) {
@@ -459,7 +469,7 @@ const Listner = () => {
                     setWasPlayingBeforeDisconnect(false);
                     // toast.success('🎵 Audio resumed!', { id: 'delayed-resume' });
                   } catch {
-                    toast.info('Click play to resume audio', { 
+                    toast.info('Click play to resume audio', {
                       id: 'manual-resume',
                       action: {
                         label: 'Play',
@@ -471,7 +481,7 @@ const Listner = () => {
               }
             }, 500);
           }
-          
+
           if (!isReconnecting) {
             // toast.success("🎙️ Broadcaster is live!", { id: 'broadcaster-live' });
           }
@@ -480,6 +490,10 @@ const Listner = () => {
           setConnectionError(`Failed to connect to audio: ${error.message}`);
           // toast.error("Failed to connect to broadcaster audio", { id: 'connection-error' });
         }
+      }
+
+      if (mediaType === "datachannel") {
+        await agoraClient.subscribe(user, mediaType);
       }
     });
 
@@ -498,7 +512,7 @@ const Listner = () => {
 
     agoraClient.on('connection-state-changed', (curState, revState, reason) => {
       console.log('Connection state changed:', curState, 'from:', revState, 'reason:', reason);
-      
+
       if (curState === 'CONNECTED') {
         setConnectionError(null);
         setIsConnected(true);
@@ -515,40 +529,70 @@ const Listner = () => {
     agoraClient.on('exception', (evt) => {
       console.error('Agora exception:', evt);
       setConnectionError(`Stream error: ${evt.code} - ${evt.msg || 'Unknown error'}`);
-      
+
       if ((evt.code === 'NETWORK_ERROR' || evt.code === 'UNEXPECTED_ERROR') && isConnected && !isReconnecting) {
         handleDisconnection();
       }
     });
 
+    agoraClient.on("stream-message", (uid, data) => {
+      try {
+        const languageDetails = LanguageBotMap[language];
+        if (languageDetails && isPlayingRef.current) {
+          const { subId, pubId, langCode } = languageDetails;
+          if (String(uid) === String(pubId)) {
+            const bytes = new Uint8Array(data);
+            const Text = protypeRef.current.lookupType("Agora.SpeechToText.Text");
+            const msg = Text.decode(bytes);
+            console.log(msg.words[0]?.text, msg.words[0]?.isFinal, "stream-message");
+
+            setSubtitles(prev => {
+              const uuidExist = prev.find(item => item.uuid === subTitleRef.current);
+              if (uuidExist) {
+                return prev.map(item => item.uuid === subTitleRef.current ? { ...item, text: msg.words[0]?.text, isFinal: msg.words[0]?.isFinal } : item);
+              } else {
+                return [...prev, { uuid: subTitleRef.current, text: msg.words[0]?.text, isFinal: msg.words[0]?.isFinal }];
+              }
+            })
+
+            if (msg.words[0]?.isFinal) {
+              subTitleRef.current = uuidv4();
+            }
+          }
+        }
+      } catch (e) {
+        console.log(e, "stream-message");
+      }
+    })
+
     // Enhanced channel joining with timeout
     const joinChannel = async () => {
-     
+
       try {
         const APP_ID = process.env.NEXT_PUBLIC_AGORA_APPID;
         const CHANNEL_NAME = channelName;
-        const {token,uid} =await generateToken("SUBSCRIBER", channelName);
-        
+        const { token, uid } = await generateToken("SUBSCRIBER", channelName);
+
         if (!APP_ID || !CHANNEL_NAME) {
           throw new Error(`Missing required Agora configuration`);
         }
 
         const joinPromise = (async () => {
           await agoraClient.setClientRole('audience');
-          await agoraClient.join(APP_ID, CHANNEL_NAME, token,uid);
+          await agoraClient.join(APP_ID, CHANNEL_NAME, token, uid);
         })();
 
-        const timeoutPromise = new Promise((_, reject) => 
+        const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Join timeout after 15 seconds')), 15000)
         );
 
         await Promise.race([joinPromise, timeoutPromise]);
-        
+
         if (isComponentMountedRef.current && !hasShownConnectedToastRef.current) {
           setIsConnected(true);
           setConnectionError(null);
           hasShownConnectedToastRef.current = true;
-          
+
           toast.success("Connected to interpretation service", { id: 'channel-connected' });
           startHeartbeat();
         }
@@ -557,7 +601,7 @@ const Listner = () => {
         if (isComponentMountedRef.current) {
           setConnectionError(`Failed to join: ${error.message}`);
           // toast.error("Failed to connect to interpretation service", { id: 'channel-error' });
-          
+
           setTimeout(() => {
             if (isComponentMountedRef.current && !isConnected) {
               joinChannel();
@@ -618,6 +662,7 @@ const Listner = () => {
     debounce((newVolume, audioTrack, muted) => {
       if (audioTrack && !muted) {
         try {
+          console.log("newVolume", newVolume,audioTrack.setVolume,muted);
           audioTrack.setVolume(newVolume);
         } catch (error) {
           console.error('Volume control error:', error);
@@ -641,7 +686,7 @@ const Listner = () => {
       // toast.error('No audio stream available. Please check connection.');
       return;
     }
-    
+
     try {
       if (isPlaying) {
         startedAlreadyRef.current = false;
@@ -667,7 +712,7 @@ const Listner = () => {
 
   const toggleMute = useCallback(() => {
     if (!remoteAudioTrack) return;
-    
+
     try {
       const newMutedState = !isMuted;
       if (newMutedState) {
@@ -693,7 +738,7 @@ const Listner = () => {
             handlePlayPauseStream();
           }, 500);
         }
-        
+
         if (isConnected) {
           startHeartbeat();
         } else {
@@ -766,11 +811,11 @@ const Listner = () => {
   //         <div className="w-20 h-20 mx-auto mb-6 bg-orange-100 rounded-full flex items-center justify-center">
   //           <AlertCircle className="w-10 h-10 text-orange-600" />
   //         </div>
-          
+
   //         <h2 className="text-2xl font-inter font-bold text-zero-text mb-4">
   //           Browser Compatibility Issue
   //         </h2>
-          
+
   //         <div className="bg-gray-50 rounded-xl p-6 mb-6 text-left">
   //           <h3 className="font-semibold mb-3">Detected Browser:</h3>
   //           <div className="space-y-2 text-sm">
@@ -801,14 +846,14 @@ const Listner = () => {
   //           >
   //             Continue Anyway
   //           </Button>
-            
+
   //           <Button
   //             onClick={() => window.location.reload()}
   //             className="w-full bg-blue-600 text-white hover:bg-blue-700 font-inter font-semibold py-3 rounded-xl"
   //           >
   //             Refresh Page
   //           </Button>
-            
+
   //           <p className="text-xs text-gray-600">
   //             If problems persist, please contact support: info@rafiky.net
   //           </p>
@@ -830,7 +875,7 @@ const Listner = () => {
   //         <p className="text-zero-text/70 font-inter mb-6">
   //           Failed to load interpretation service: {sdkError}
   //         </p>
-          
+
   //         {browserInfo && (
   //           <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left text-sm">
   //             <div><strong>Browser:</strong> {browserInfo.name} {browserInfo.version}</div>
@@ -845,7 +890,7 @@ const Listner = () => {
   //           >
   //             Refresh Page
   //           </Button>
-            
+
   //           <div className="bg-blue-50 rounded-lg p-4">
   //             <div className="flex items-center gap-2 mb-2">
   //               <Chrome className="w-4 h-4 text-blue-600" />
@@ -863,12 +908,32 @@ const Listner = () => {
 
   return (
     <>
+      {
+        subTitle.length > 0 && (
+          <div className="fixed bottom-4 left-4 right-4 bg-white p-4 shadow-lg rounded-md z-50 h-[15rem] overflow-y-auto space-y-4 max-w-3xl mx-auto">
+            {subTitle.map(item => (
+              <>
+                {
+                  item.text &&
+                  <div key={item.uuid} className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-zero-text rounded-full text-white flex items-center justify-center">B</div>
+                    <h2 className="text-sm text-zero-text/70 font-inter font-light">{item.text}</h2>
+                  </div>
+                }
+
+              </>
+            ))}
+          </div>
+        )
+      }
+
+
       <div className="min-h-screen bg-zero-beige">
         {/* Festival Header */}
         <div className="w-full overflow-hidden">
           <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
-            <img 
-              src="/images/atk-logo.jpg" 
+            <img
+              src="/images/atk-logo.jpg"
               alt="Novamarine"
               className="object-contain mx-auto mt-10"
               loading="eager"
@@ -884,8 +949,8 @@ const Listner = () => {
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-inter font-bold text-zero-text mb-6 flex items-center justify-center">
               Live {language?.slice(0, 1).toUpperCase()}{language?.slice(1).toLowerCase()} Interpretation Service
             </h1>
-            
-  
+
+
             {/* Status Indicators */}
             <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
               {isSDKLoading ? (
@@ -905,14 +970,13 @@ const Listner = () => {
                   <Suspense fallback={<div className="w-20 h-8 bg-gray-200 rounded-full animate-pulse"></div>}>
                     <ListenerCountBadge count={listenerCount} />
                   </Suspense>
-                  
+
                   {/* Connection Status */}
-                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-                    streamStatus.status === 'live' ? 'text-green-600 bg-green-50' :
+                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${streamStatus.status === 'live' ? 'text-green-600 bg-green-50' :
                     streamStatus.status === 'reconnecting' ? 'text-blue-600 bg-blue-50' :
-                    streamStatus.status === 'loading' ? 'text-blue-600 bg-blue-50' :
-                    'text-orange-600 bg-orange-50'
-                  }`}>
+                      streamStatus.status === 'loading' ? 'text-blue-600 bg-blue-50' :
+                        'text-orange-600 bg-orange-50'
+                    }`}>
                     {streamStatus.status === 'reconnecting' || streamStatus.status === 'loading' ? (
                       <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                     ) : streamStatus.status === 'live' ? (
@@ -921,10 +985,10 @@ const Listner = () => {
                       <AlertCircle className="w-4 h-4" />
                     )}
                     {streamStatus.status === 'live' ? 'Connected' :
-                     streamStatus.status === 'reconnecting' ? `Reconnecting (${reconnectCount}/${maxReconnectAttempts})` :
-                     streamStatus.status === 'loading' ? 'Loading' :
-                     streamStatus.status === 'waiting' ? 'Connecting Audio' :
-                     'Offline'}
+                      streamStatus.status === 'reconnecting' ? `Reconnecting (${reconnectCount}/${maxReconnectAttempts})` :
+                        streamStatus.status === 'loading' ? 'Loading' :
+                          streamStatus.status === 'waiting' ? 'Connecting Audio' :
+                            'Offline'}
                   </div>
                 </>
               )}
@@ -949,10 +1013,10 @@ const Listner = () => {
           {/* Main Player Section */}
           <div className="max-w-md lg:max-w-4xl mx-auto">
             <div className="lg:grid lg:grid-cols-2 lg:gap-10 space-y-8 lg:space-y-0">
-              
+
               {/* Left Column - Primary Controls */}
               <div className="space-y-8">
-                
+
                 {/* Primary Control Card */}
                 <Card className="bg-white/90 border-0 rounded-2xl">
                   <div className="p-8 text-center">
@@ -963,28 +1027,27 @@ const Listner = () => {
                         <Play className="h-10 w-10 lg:h-14 lg:w-14 text-white ml-1" />
                       )}
                     </div>
-                    
+
                     <h3 className="text-2xl lg:text-3xl font-inter font-bold text-zero-text mb-4">
-                      {streamStatus.status === 'live' ? 'Live Stream Active' : 
-                       streamStatus.status === 'loading' ? 'Loading Service' :
-                       streamStatus.status === 'reconnecting' ? 'Reconnecting' :
-                       streamStatus.status === 'waiting' ? 'Connecting Audio' :
-                       'Stream Offline'}
+                      {streamStatus.status === 'live' ? 'Live Stream Active' :
+                        streamStatus.status === 'loading' ? 'Loading Service' :
+                          streamStatus.status === 'reconnecting' ? 'Reconnecting' :
+                            streamStatus.status === 'waiting' ? 'Connecting Audio' :
+                              'Stream Offline'}
                     </h3>
-                    
+
                     <p className="text-base lg:text-lg font-inter text-zero-text/70 mb-8">
                       {streamStatus.message}
                     </p>
 
                     {/* Action Buttons */}
                     {streamStatus.status === 'live' && (
-                      <Button 
+                      <Button
                         onClick={handlePlayPauseStream}
-                        className={`w-full text-lg lg:text-xl px-8 py-6 lg:py-8 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-xl ${
-                          isPlaying 
-                            ? 'bg-zero-warning text-white hover:bg-zero-warning/90' 
-                            : 'bg-zero-green text-zero-text hover:bg-zero-green/90'
-                        }`}
+                        className={`w-full text-lg lg:text-xl px-8 py-6 lg:py-8 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-xl ${isPlaying
+                          ? 'bg-zero-warning text-white hover:bg-zero-warning/90'
+                          : 'bg-zero-green text-zero-text hover:bg-zero-green/90'
+                          }`}
                         size="lg"
                         disabled={streamStatus.status === 'reconnecting'}
                       >
@@ -1009,11 +1072,11 @@ const Listner = () => {
                         disabled
                       >
                         <Radio className="mr-2 h-5 w-5 lg:h-6 lg:w-6" />
-                         Waiting For Broadcaster...
+                        Waiting For Broadcaster...
                       </Button>
                     )}
 
-                    
+
                   </div>
                 </Card>
 
@@ -1024,7 +1087,7 @@ const Listner = () => {
                       <Volume className="h-6 w-6 lg:h-7 lg:w-7 text-zero-blue" />
                       Audio Controls
                     </h4>
-                    
+
                     <div className="flex items-center gap-6">
                       <button
                         onClick={toggleMute}
@@ -1037,14 +1100,15 @@ const Listner = () => {
                           <Volume className="h-6 w-6 lg:h-7 lg:w-7 text-zero-text group-hover:text-zero-blue transition-colors" />
                         )}
                       </button>
-                      
+
                       <div className="flex-1 space-y-3">
-                        {!isIOS ? (
+                        {/* {!isIOS ? ( */}
+                        {false ? (
                           <>
                             <input
                               type="range"
                               min="0"
-                              max="100"
+                              max="1000"
                               step={1}
                               value={isMuted ? 0 : volume}
                               onChange={(e) => handleVolumeChange(Number(e.target.value))}
@@ -1075,7 +1139,7 @@ const Listner = () => {
 
               {/* Right Column - Audio Level and Status */}
               <div className="space-y-8">
-                
+
                 {/* Audio Level Display */}
                 <Card className="bg-white/90 border-0 rounded-2xl">
                   <div className="p-8">
@@ -1083,7 +1147,7 @@ const Listner = () => {
                       <Signal className="h-5 w-5 lg:h-6 lg:w-6 text-zero-green" />
                       Audio Level
                     </h4>
-                    
+
                     {isSDKLoading ? (
                       <div className="mb-4">
                         <div className="h-32 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">
@@ -1109,20 +1173,18 @@ const Listner = () => {
                     )}
 
                     <div className="text-center">
-                      <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-                        streamStatus.status === 'live' && isPlaying
-                          ? 'bg-zero-status-good/10 text-zero-status-good' 
-                          : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        <div className={`w-2 h-2 rounded-full ${
-                          streamStatus.status === 'live' && isPlaying
-                            ? 'bg-zero-status-good animate-pulse' 
-                            : 'bg-gray-400'
-                        }`}></div>
+                      <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${streamStatus.status === 'live' && isPlaying
+                        ? 'bg-zero-status-good/10 text-zero-status-good'
+                        : 'bg-gray-100 text-gray-600'
+                        }`}>
+                        <div className={`w-2 h-2 rounded-full ${streamStatus.status === 'live' && isPlaying
+                          ? 'bg-zero-status-good animate-pulse'
+                          : 'bg-gray-400'
+                          }`}></div>
                         {streamStatus.status === 'live' && isPlaying ? 'Audio Active' :
-                         streamStatus.status === 'loading' ? 'Initializing' : 
-                         streamStatus.status === 'reconnecting' ? 'Reconnecting' :
-                         'Audio Inactive'}
+                          streamStatus.status === 'loading' ? 'Initializing' :
+                            streamStatus.status === 'reconnecting' ? 'Reconnecting' :
+                              'Audio Inactive'}
                       </div>
                     </div>
                   </div>
@@ -1134,38 +1196,37 @@ const Listner = () => {
                     <h4 className="text-xl lg:text-2xl font-inter font-bold text-zero-text mb-6">
                       System Status
                     </h4>
-                    
+
                     <div className="space-y-4 text-sm">
-                      
-                      
+
+
                       <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <span className="font-medium text-zero-text/70">Service Status</span>
-                        <span className={`font-bold ${
-                          streamStatus.status === 'live' ? 'text-green-600' :
+                        <span className={`font-bold ${streamStatus.status === 'live' ? 'text-green-600' :
                           streamStatus.status === 'reconnecting' ? 'text-blue-600' :
-                          'text-orange-600'
-                        }`}>
+                            'text-orange-600'
+                          }`}>
                           {streamStatus.status === 'live' ? 'Connected' :
-                           streamStatus.status === 'reconnecting' ? 'Reconnecting' :
-                           streamStatus.status === 'loading' ? 'Loading' :
-                           'Connecting'}
+                            streamStatus.status === 'reconnecting' ? 'Reconnecting' :
+                              streamStatus.status === 'loading' ? 'Loading' :
+                                'Connecting'}
                         </span>
                       </div>
-                      
+
                       <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <span className="font-medium text-zero-text/70">Broadcaster</span>
                         <span className={`font-bold ${broadcasterOnline ? 'text-green-600' : 'text-gray-600'}`}>
                           {broadcasterOnline ? 'Online' : 'Offline'}
                         </span>
                       </div>
-                      
+
                       <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <span className="font-medium text-zero-text/70">Audio Stream</span>
                         <span className={`font-bold ${isLive ? 'text-green-600' : 'text-gray-600'}`}>
                           {isLive ? 'Active' : 'Inactive'}
                         </span>
                       </div>
-                      
+
                       <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <span className="font-medium text-zero-text/70">Listeners</span>
                         <span className="font-bold text-zero-text">{listenerCount}</span>
@@ -1182,7 +1243,7 @@ const Listner = () => {
                 </Card>
 
                 {/* Contact Support */}
-               {/* <div className="text-center">
+                {/* <div className="text-center">
                   <Button 
                     className="bg-zero-blue text-white hover:bg-zero-blue/90 font-inter font-semibold px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105"
                     onClick={() => setShowContactModal(true)}
@@ -1209,6 +1270,12 @@ const Listner = () => {
           </div>
         </div> */}
       </div>
+      
+      {
+        subTitle.length > 0 && (
+          <div className='h-[15rem] w-full'></div>
+        )
+      }
 
       {/* Contact Modal */}
       {/* {showContactModal && (

@@ -15,6 +15,9 @@ import Dialog from './Dialog';
 import { useChannel } from '@/context/ChannelContext';
 import { useParams } from 'next/navigation';
 import { flagsMapping } from '@/constants/flagsMapping';
+import { StartCaption, StopCaption } from '@/services/CaptionService';
+import { usePrototype } from '@/hooks/usePrototype';
+import { LanguageBotMap, defaultData } from '@/constants/captionUIDs';
 
 // Async Agora SDK loader
 const loadAgoraSDK = async () => {
@@ -66,6 +69,9 @@ const Broadcast = () => {
   const isLiveRef = useRef(false);
   const maxReconnectAttempts = 8;
   const { channelName, setLanguage } = useChannel();
+  const protypeRef = usePrototype();
+  const agentSttRef = useRef(null);
+  const languageDetailsRef = useRef(LanguageBotMap[language] || defaultData);
 
 
   useEffect(() => {
@@ -113,6 +119,7 @@ const Broadcast = () => {
     };
   }, []);
 
+
   // Enhanced reconnection function with session persistence
   const attemptReconnection = useCallback(async () => {
     if (!client || !isComponentMountedRef.current || reconnectAttempts >= maxReconnectAttempts) return;
@@ -129,7 +136,7 @@ const Broadcast = () => {
       try {
         const APP_ID = process.env.NEXT_PUBLIC_AGORA_APPID;
         const CHANNEL_NAME = channelName;
-        const { token, uid } = await generateToken("PUBLISHER", channelName);
+        const { token, uid } = await generateToken("PUBLISHER", channelName, languageDetailsRef.current.hostUid);
 
         if (!APP_ID || !CHANNEL_NAME) {
           throw new Error(`Missing broadcast configuration`);
@@ -144,6 +151,9 @@ const Broadcast = () => {
           await client.publish(localAudioTrack);
         }
 
+
+        const agentRes = await StartCaption(CHANNEL_NAME, language, uid);
+        agentSttRef.current = agentRes.agentId;
         setConnectionStatus('connected');
         setIsReconnecting(false);
         setReconnectAttempts(0);
@@ -271,6 +281,28 @@ const Broadcast = () => {
       }
     });
 
+
+
+
+
+
+    agoraClient.on("stream-message", (uid, data) => {
+      try {
+        const languageDetails = LanguageBotMap[language];
+        if (languageDetails) {
+          const { subId, pubId, langCode } = languageDetails;
+          if (String(uid) === String(pubId)) {
+            const bytes = new Uint8Array(data);
+            const Text = protypeRef.current.lookupType("Agora.SpeechToText.Text");
+            const msg  = Text.decode(bytes);
+            console.log(msg.words[0]?.text, msg.words[0]?.isFinal, "stream-message");
+          }
+        }
+      } catch (e) {
+        console.log(e, "stream-message");
+      }
+    })
+
     return () => {
       isComponentMountedRef.current = false;
       if (reconnectTimeoutRef.current) {
@@ -368,9 +400,11 @@ const Broadcast = () => {
 
       const connectPromise = async () => {
         await client.setClientRole('host');
-        const { token, uid } = await generateToken("PUBLISHER", channelName);
+        const { token, uid } = await generateToken("PUBLISHER", channelName, languageDetailsRef.current.hostUid);
         await client.join(APP_ID, CHANNEL_NAME, token, uid);
         await client.publish(localAudioTrack);
+        const agentRes = await StartCaption(CHANNEL_NAME, language, uid);
+        agentSttRef.current = agentRes.agentId;
       };
 
       // Race between connection and timeout
@@ -436,6 +470,8 @@ const Broadcast = () => {
       }
 
       await client.leave();
+
+      await StopCaption(agentSttRef.current);
 
       setIsLive(false);
       setConnectionStatus('disconnected');
@@ -505,7 +541,11 @@ const Broadcast = () => {
         const count = res.data?.data?.audience_total || 0;
         const hostcount = res.data?.data?.broadcasters || 0;
         setListenerCount(count);
-        setBroadcasterCount(hostcount);
+        if(hostcount.includes(languageDetailsRef.current.hostUid)) {
+          setBroadcasterCount(hostcount.length);
+        }else{
+          setBroadcasterCount(0);
+        }
 
         // Alert if listener count drops significantly while live
         if (isLive && count === 0) {
@@ -531,7 +571,7 @@ const Broadcast = () => {
 
   // Initialize Pusher
   useEffect(() => {
-    
+
     const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
       cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
     });
@@ -1088,7 +1128,7 @@ const Broadcast = () => {
                       </div>
                       <div className="p-4 bg-gray-50 rounded-2xl">
                         <span className="text-zero-text/70 font-medium block mb-1">Language</span>
-                        <div className="font-bold text-lg text-zero-text flex items-center gap-2"><img src={flagsMapping[language]} alt={language} className='w-6 h-6'/>{language?.slice(0, 1).toUpperCase()}{language?.slice(1).toLowerCase()}</div>
+                        <div className="font-bold text-lg text-zero-text flex items-center gap-2"><img src={flagsMapping[language]} alt={language} className='w-6 h-6' />{language?.slice(0, 1).toUpperCase()}{language?.slice(1).toLowerCase()}</div>
                       </div>
                       <div className="p-4 bg-gray-50 rounded-2xl">
                         <span className="text-zero-text/70 font-medium block mb-1">Mic Status</span>

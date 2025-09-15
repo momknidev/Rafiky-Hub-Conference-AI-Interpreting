@@ -3,10 +3,10 @@ import { RtcTokenBuilder,RtcRole } from 'agora-token';
 
 
 
-export async function generateToken(user, channelName){
+export async function generateToken(user, channelName,uidToUse=null){
     const appID = process.env.NEXT_PUBLIC_AGORA_APPID;
     const appCertificate = process.env.NEXT_PUBLIC_AGORA_CERT;
-    const uid = Math.floor(Math.random() * 1000000);
+    const uid = uidToUse ? uidToUse : Math.floor(Math.random() * 1000000);
     const role = user == "PUBLISHER" ? RtcRole.PUBLISHER : RtcRole.SUBSCRIBER;
     const expirationTimeInSeconds = 3600;
 

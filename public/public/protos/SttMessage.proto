@@ -1,0 +1,5 @@
+syntax = "proto3";
+package Agora.SpeechToText;
+
+message Word { string text = 1; bool is_final = 4; }
+message Text { repeated Word words = 10; }
