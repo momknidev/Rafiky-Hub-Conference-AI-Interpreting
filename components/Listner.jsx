@@ -567,6 +567,7 @@ const Listner = () => {
             if (msg.words[0]?.isFinal) {
               subTitleRef.current = uuidv4();
               setSubtitles(prev => [...prev, { uuid: subTitleRef.current, text: msg.words[0]?.text, isFinal: msg.words[0]?.isFinal }]);
+              console.log(msg.words[0], "stream-message");
             }
           }
         }
@@ -920,7 +921,7 @@ const Listner = () => {
     <>
       {
         subTitle.length > 0 && (
-          <div className="fixed bottom-4 left-4 right-4 bg-white p-4 shadow-lg rounded-md z-50 h-[15rem] overflow-y-auto space-y-4 max-w-3xl mx-auto" ref={subTitleContainerRef}>
+          <div className="fixed bottom-4 border border-gray-200 left-4 right-4 bg-white p-4 shadow-lg rounded-md z-50 h-[15rem] overflow-y-auto space-y-4 max-w-3xl mx-auto" ref={subTitleContainerRef}>
             {subTitle.map(item => (
               <>
                 {
