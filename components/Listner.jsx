@@ -213,6 +213,15 @@ const Listner = () => {
   const [subTitle, setSubtitles] = useState([]);
   const subTitleRef = useRef(uuidv4());
   const isPlayingRef = useRef(false);
+  const subTitleContainerRef = useRef(null);
+
+
+  //auto scroll to bottom
+  useEffect(() => {
+    if (subTitleContainerRef.current) {
+      subTitleContainerRef.current.scrollTop = subTitleContainerRef.current.scrollHeight;
+    }
+  }, [subTitle]);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
@@ -546,17 +555,18 @@ const Listner = () => {
             const msg = Text.decode(bytes);
             console.log(msg.words[0]?.text, msg.words[0]?.isFinal, "stream-message");
 
-            setSubtitles(prev => {
-              const uuidExist = prev.find(item => item.uuid === subTitleRef.current);
-              if (uuidExist) {
-                return prev.map(item => item.uuid === subTitleRef.current ? { ...item, text: msg.words[0]?.text, isFinal: msg.words[0]?.isFinal } : item);
-              } else {
-                return [...prev, { uuid: subTitleRef.current, text: msg.words[0]?.text, isFinal: msg.words[0]?.isFinal }];
-              }
-            })
+            // setSubtitles(prev => {
+            //   const uuidExist = prev.find(item => item.uuid === subTitleRef.current);
+            //   if (uuidExist) {
+            //     return prev.map(item => item.uuid === subTitleRef.current ? { ...item, text: msg.words[0]?.text, isFinal: msg.words[0]?.isFinal } : item);
+            //   } else {
+            //     return [...prev, { uuid: subTitleRef.current, text: msg.words[0]?.text, isFinal: msg.words[0]?.isFinal }];
+            //   }
+            // })
 
             if (msg.words[0]?.isFinal) {
               subTitleRef.current = uuidv4();
+              setSubtitles(prev => [...prev, { uuid: subTitleRef.current, text: msg.words[0]?.text, isFinal: msg.words[0]?.isFinal }]);
             }
           }
         }
@@ -910,13 +920,13 @@ const Listner = () => {
     <>
       {
         subTitle.length > 0 && (
-          <div className="fixed bottom-4 left-4 right-4 bg-white p-4 shadow-lg rounded-md z-50 h-[15rem] overflow-y-auto space-y-4 max-w-3xl mx-auto">
+          <div className="fixed bottom-4 left-4 right-4 bg-white p-4 shadow-lg rounded-md z-50 h-[15rem] overflow-y-auto space-y-4 max-w-3xl mx-auto" ref={subTitleContainerRef}>
             {subTitle.map(item => (
               <>
                 {
                   item.text &&
-                  <div key={item.uuid} className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-zero-text rounded-full text-white flex items-center justify-center">B</div>
+                  <div key={item.uuid} className="flex items-center gap-3">
+                    <img src={flagsMapping[language]} alt={language} className="w-6 h-6" />
                     <h2 className="text-sm text-zero-text/70 font-inter font-light">{item.text}</h2>
                   </div>
                 }
@@ -1092,7 +1102,7 @@ const Listner = () => {
                       <button
                         onClick={toggleMute}
                         className="p-4 lg:p-5 rounded-xl bg-gray-100 hover:bg-gray-200 transition-all duration-300 group"
-                        disabled={!isConnected || streamStatus.status === 'reconnecting' || isSDKLoading}
+                        disabled={!isConnected || streamStatus.status === 'reconnecting' || isSDKLoading || true}
                       >
                         {isMuted ? (
                           <VolumeX className="h-6 w-6 lg:h-7 lg:w-7 text-zero-warning" />
@@ -1215,8 +1225,8 @@ const Listner = () => {
 
                       <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <span className="font-medium text-zero-text/70">Broadcaster</span>
-                        <span className={`font-bold ${broadcasterOnline ? 'text-green-600' : 'text-gray-600'}`}>
-                          {broadcasterOnline ? 'Online' : 'Offline'}
+                        <span className={`font-bold ${isLive ? 'text-green-600' : 'text-gray-600'}`}>
+                          {isLive ? 'Online' : 'Offline'}
                         </span>
                       </div>
 
