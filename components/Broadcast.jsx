@@ -15,9 +15,9 @@ import Dialog from './Dialog';
 import { useChannel } from '@/context/ChannelContext';
 import { useParams } from 'next/navigation';
 import { flagsMapping } from '@/constants/flagsMapping';
-import { StartCaption, StopCaption } from '@/services/CaptionService';
+import { StartCaption, StopCaption, getRTMPUrl} from '@/services/CaptionService';
 import { usePrototype } from '@/hooks/usePrototype';
-import { LanguageBotMap, defaultData } from '@/constants/captionUIDs';
+import { LanguageBotMap, codeToLanguage, defaultData,interpreters } from '@/constants/captionUIDs';
 
 // Async Agora SDK loader
 const loadAgoraSDK = async () => {
@@ -44,6 +44,37 @@ const Broadcast = () => {
   const [waitingForResponseToHandoverRquestPopup, setWaitingForResponseToHandoverRquestPopup] = useState(false);
   const [handoverRequestResponse, setHandoverRequestResponse] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [firstLoad, setFirstLoad] = useState(true);
+  const websocketRefs = useRef({});
+
+
+  const connectToInterpreter = async (language) => {
+    const {url:rtmpUrl} = await getRTMPUrl(channelName,language);
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}`);
+    ws.onopen = () => {
+      console.log("Interpreter connected");
+    };
+    ws.onmessage = (event) => {
+      console.log("Interpreter message", event.data);
+    };
+    ws.onclose = () => {
+      console.log("Interpreter disconnected");
+    };
+    ws.onerror = (event) => {
+      console.log("Interpreter error", event);
+    };
+    websocketRefs.current[language] = ws;
+  }
+
+
+  useEffect(() => {
+    setTimeout(() => {
+      setFirstLoad(false);
+    }, 3000);
+  }, []);
+
+
+  
 
   // Basic state
   const [isLive, setIsLive] = useState(false);
@@ -136,7 +167,7 @@ const Broadcast = () => {
       try {
         const APP_ID = process.env.NEXT_PUBLIC_AGORA_APPID;
         const CHANNEL_NAME = channelName;
-        const { token, uid } = await generateToken("PUBLISHER", channelName, languageDetailsRef.current.hostUid);
+        const { token, uid } = await generateToken("PUBLISHER", channelName);
 
         if (!APP_ID || !CHANNEL_NAME) {
           throw new Error(`Missing broadcast configuration`);
@@ -295,7 +326,19 @@ const Broadcast = () => {
             const bytes = new Uint8Array(data);
             const Text = protypeRef.current.lookupType("Agora.SpeechToText.Text");
             const msg  = Text.decode(bytes);
-            console.log(msg.words[0]?.text, msg.words[0]?.isFinal, "stream-message");
+            if (msg.dataType === "transcribe") {
+              if(msg?.words[0]?.isFinal){
+                console.log(msg?.words[0]?.text, "stream-message");
+              }
+            }
+
+            if (msg.dataType === "translate") {
+              if(msg?.trans[0]?.isFinal){
+                console.log(msg?.trans[0]?.texts[0], msg?.trans[0]?.lang, "stream-message");
+                const lang = codeToLanguage[msg?.trans[0]?.lang];
+                websocketRefs.current[lang]?.send(JSON.stringify({ type: "translation", text: msg?.trans[0]?.texts[0], language: msg?.trans[0]?.lang }));
+              }
+            }
           }
         }
       } catch (e) {
@@ -400,7 +443,7 @@ const Broadcast = () => {
 
       const connectPromise = async () => {
         await client.setClientRole('host');
-        const { token, uid } = await generateToken("PUBLISHER", channelName, languageDetailsRef.current.hostUid);
+        const { token, uid } = await generateToken("PUBLISHER", channelName);
         await client.join(APP_ID, CHANNEL_NAME, token, uid);
         await client.publish(localAudioTrack);
         const agentRes = await StartCaption(CHANNEL_NAME, language, uid);
@@ -435,6 +478,11 @@ const Broadcast = () => {
         duration: 4000
       });
 
+      if(Object.keys(websocketRefs.current).length === 0){  
+        interpreters.forEach(language => {
+          connectToInterpreter(language);
+        });
+      }
     } catch (error) {
       console.error("Error starting stream:", error);
 
@@ -539,13 +587,15 @@ const Broadcast = () => {
       try {
         const res = await getBroadcastInfoRequest(channelName);
         const count = res.data?.data?.audience_total || 0;
-        const hostcount = res.data?.data?.broadcasters || 0;
+        let hostcount = res.data?.data?.broadcasters || [];
         setListenerCount(count);
-        if(hostcount.includes(languageDetailsRef.current.hostUid)) {
-          setBroadcasterCount(hostcount.length);
-        }else{
-          setBroadcasterCount(0);
-        }
+        hostcount = hostcount.filter(item => item !== languageDetailsRef.current.pubId);
+        
+        // if(hostcount.length > 0) {
+        //   setBroadcasterCount(2);
+        // }else{
+        //   setBroadcasterCount(1);
+        // }
 
         // Alert if listener count drops significantly while live
         if (isLive && count === 0) {
@@ -758,7 +808,7 @@ const Broadcast = () => {
   );
 
   // Show loading component while SDK is loading
-  if (isSDKLoading) {
+  if (isSDKLoading || firstLoad) {
     return <LoadingComponent />;
   }
 

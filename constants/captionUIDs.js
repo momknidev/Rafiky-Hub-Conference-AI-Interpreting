@@ -34,9 +34,82 @@ export const LanguageBotMap = {
 } 
 
 
-const defaultData = {
+export const defaultData = {
     subId: 900089,
     pubId: 900090,
     hostUid: 2000579,
     langCode: "en-US"
+}
+
+
+export const interpreters = [
+    "english",
+    // "german",
+    // "french",
+    // "spanish",
+]
+
+export const codeToLanguage = {
+    "hi-IN": "hindi",
+    "de-DE": "german",
+    "fr-FR": "french",
+    "es-ES": "spanish",
+    "it-IT": "italian",
+    "pt-PT": "portuguese",
+    "ru-RU": "russian",
+    "ar-EG": "arabic",
+    "ar-JO": "arabic",
+    "ar-SA": "arabic",
+    "ar-AE": "arabic",
+    "bn-IN": "bengali",
+    "zh-CN": "chinese",
+    "zh-HK": "chinese",
+    "zh-TW": "chinese",
+    "nl-NL": "dutch",
+    "en-IN": "english",
+    "en-US": "english",
+    "fil-PH": "filipino",
+    "id-ID": "indonesian",
+    "ja-JP": "japanese",
+    "kn-IN": "kannada",
+    "ko-KR": "korean",
+    "ms-MY": "malay",
+    "fa-IR": "persian",
+    "pt-PT": "portuguese",
+    "ru-RU": "russian",
+    "es-ES": "spanish",
+    "ta-IN": "tamil",
+    "te-IN": "telugu",
+    "th-TH": "thai",
+}
+
+
+export const intrepreterUids = {
+    "hindi": 600001,
+    "german": 600002,
+    "french": 600003,
+    "spanish": 600004,
+    "italian": 600005,
+    "portuguese": 600006,
+    "russian": 600007,
+    "arabic": 600008,
+    "bengali": 600009,
+    "chinese": 600010,
+    "dutch": 600011,
+    "english": 600012,
+    "filipino": 600013,
+    "indonesian": 600014,
+    "japanese": 600015,
+    "kannada": 600016,
+    "korean": 600017,
+    "malay": 600018,
+    "persian": 600019,
+    "portuguese": 600020,
+    "russian": 600021,
+    "spanish": 600022,
+    "tamil": 600023,
+    "telugu": 600024,
+    "thai": 600025,
+    "turkish": 600026,
+    "vietnamese": 600027,
 }

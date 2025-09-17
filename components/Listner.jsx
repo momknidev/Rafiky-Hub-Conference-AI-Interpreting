@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Volume, VolumeX, ArrowLeft, Play, Pause, Radio, Signal, Headphones, Users, Wifi, Globe, AlertCircle, CheckCircle, Chrome, Monitor } from 'lucide-react';
+import { Volume, VolumeX, ArrowLeft, Play, Pause, Radio, Signal, Headphones, Users, Wifi, Globe, AlertCircle, CheckCircle, Chrome, Monitor, XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import debounce from 'lodash/debounce';
 import { getBroadcastInfoRequest } from '@/http/agoraHttp';
@@ -10,7 +10,7 @@ import { generateToken } from '@/utils/generateToken';
 import { useChannel } from '@/context/ChannelContext';
 import { useParams } from 'next/navigation';
 import { flagsMapping } from '@/constants/flagsMapping';
-import { LanguageBotMap, defaultData } from '@/constants/captionUIDs';
+import { LanguageBotMap, codeToLanguage, defaultData, intrepreterUids } from '@/constants/captionUIDs';
 import { usePrototype } from '@/hooks/usePrototype';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -209,6 +209,7 @@ const Listner = () => {
   const [sessionId, setSessionId] = useState(null);
   const [lastKnownBroadcasterState, setLastKnownBroadcasterState] = useState(null);
   const [broadcasterOnline, setBroadcasterOnline] = useState(false);
+  const [subtitleOpen, setSubtitleOpen] = useState(true);
   const { channelName, setLanguage } = useChannel();
   const [subTitle, setSubtitles] = useState([]);
   const subTitleRef = useRef(uuidv4());
@@ -443,8 +444,8 @@ const Listner = () => {
 
     // Enhanced event handlers
     agoraClient.on('user-published', async (user, mediaType) => {
-      console.log("user-published", wasPlayingBeforeDisconnect, isPlaying);
-      if (mediaType === 'audio' && isComponentMountedRef.current) {
+      console.log("user-published", user.uid, intrepreterUids[language]);
+      if (mediaType === 'audio' && isComponentMountedRef.current && user.uid === intrepreterUids[language]) {
         try {
           await agoraClient.subscribe(user, mediaType);
           const audioTrack = user.audioTrack;
@@ -546,31 +547,28 @@ const Listner = () => {
 
     agoraClient.on("stream-message", (uid, data) => {
       try {
-        const languageDetails = LanguageBotMap[language];
-        if (languageDetails && isPlayingRef.current) {
-          const { subId, pubId, langCode } = languageDetails;
-          if (String(uid) === String(pubId)) {
-            const bytes = new Uint8Array(data);
-            const Text = protypeRef.current.lookupType("Agora.SpeechToText.Text");
-            const msg = Text.decode(bytes);
-            console.log(msg.words[0]?.text, msg.words[0]?.isFinal, "stream-message");
 
-            // setSubtitles(prev => {
-            //   const uuidExist = prev.find(item => item.uuid === subTitleRef.current);
-            //   if (uuidExist) {
-            //     return prev.map(item => item.uuid === subTitleRef.current ? { ...item, text: msg.words[0]?.text, isFinal: msg.words[0]?.isFinal } : item);
-            //   } else {
-            //     return [...prev, { uuid: subTitleRef.current, text: msg.words[0]?.text, isFinal: msg.words[0]?.isFinal }];
-            //   }
-            // })
 
-            if (msg.words[0]?.isFinal) {
+        const bytes = new Uint8Array(data);
+        const Text = protypeRef.current.lookupType("Agora.SpeechToText.Text");
+        const msg = Text.decode(bytes);
+
+        if (msg.dataType === "translate") {
+          if (msg?.trans[0]?.isFinal) {
+            const lang = codeToLanguage[msg?.trans[0]?.lang];
+            if (lang === language) {
+              console.log(msg?.trans[0]?.texts[0], msg?.trans[0]?.lang, "stream-message");
+              console.log(language, "language");
+              console.log(lang, "lang");
               subTitleRef.current = uuidv4();
-              setSubtitles(prev => [...prev, { uuid: subTitleRef.current, text: msg.words[0]?.text, isFinal: msg.words[0]?.isFinal }]);
-              console.log(msg.words[0], "stream-message");
+              setSubtitles(prev => [...prev, { uuid: subTitleRef.current, text: msg?.trans[0]?.texts[0], isFinal: msg?.trans[0]?.isFinal }]);
             }
           }
         }
+
+
+
+
       } catch (e) {
         console.log(e, "stream-message");
       }
@@ -673,7 +671,7 @@ const Listner = () => {
     debounce((newVolume, audioTrack, muted) => {
       if (audioTrack && !muted) {
         try {
-          console.log("newVolume", newVolume,audioTrack.setVolume,muted);
+          console.log("newVolume", newVolume, audioTrack.setVolume, muted);
           audioTrack.setVolume(newVolume);
         } catch (error) {
           console.error('Volume control error:', error);
@@ -803,8 +801,8 @@ const Listner = () => {
   // Status determination
   const getStreamStatus = () => {
     if (isSDKLoading) return { status: 'loading', message: 'Loading audio system...' };
-    if (showBrowserWarning) return { status: 'browser-warning', message: 'Browser compatibility check...' };
-    if (connectionError) return { status: 'error', message: connectionError };
+    // if (showBrowserWarning) return { status: 'browser-warning', message: 'Browser compatibility check...' };
+    // if (connectionError) return { status: 'error', message: connectionError };
     if (isReconnecting) return { status: 'reconnecting', message: `Reconnecting... (${reconnectCount}/${maxReconnectAttempts})` };
     if (!isConnected) return { status: 'disconnected', message: 'Connecting to service...' };
     if (broadcasterOnline && !isLive) return { status: 'waiting', message: 'Broadcaster online, establishing audio...' };
@@ -920,8 +918,11 @@ const Listner = () => {
   return (
     <>
       {
-        subTitle.length > 0 && (
+        (subtitleOpen && subTitle.length > 0) && (
           <div className="fixed bottom-4 border border-gray-200 left-4 right-4 bg-white p-4 shadow-lg rounded-md z-50 h-[15rem] overflow-y-auto space-y-4 max-w-3xl mx-auto" ref={subTitleContainerRef}>
+            <Button size="icon" variant="ghost" onClick={() => setSubtitleOpen(false)} className="absolute top-2 right-2 cursor-pointer text-neutral-900">
+              <XIcon className="w-4 h-4" />
+            </Button>
             {subTitle.map(item => (
               <>
                 {
@@ -1053,28 +1054,44 @@ const Listner = () => {
 
                     {/* Action Buttons */}
                     {streamStatus.status === 'live' && (
-                      <Button
-                        onClick={handlePlayPauseStream}
-                        className={`w-full text-lg lg:text-xl px-8 py-6 lg:py-8 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-xl ${isPlaying
-                          ? 'bg-zero-warning text-white hover:bg-zero-warning/90'
-                          : 'bg-zero-green text-zero-text hover:bg-zero-green/90'
-                          }`}
-                        size="lg"
-                        disabled={streamStatus.status === 'reconnecting'}
-                      >
-                        {isPlaying ? (
-                          <>
-                            <Pause className="mr-2 h-5 w-5 lg:h-6 lg:w-6" />
-                            Pause Stream
-                          </>
-                        ) : (
-                          <>
-                            <Play className="mr-2 h-5 w-5 lg:h-6 lg:w-6" />
-                            Start Listening
-                          </>
-                        )}
-                      </Button>
-                    )}
+                      <>
+                        <Button
+                          onClick={handlePlayPauseStream}
+                          className={`w-full text-lg lg:text-xl px-8 py-6 lg:py-8 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-xl ${isPlaying
+                            ? 'bg-zero-warning text-white hover:bg-zero-warning/90'
+                            : 'bg-zero-green text-zero-text hover:bg-zero-green/90'
+                            }`}
+                          size="lg"
+                          disabled={streamStatus.status === 'reconnecting'}
+                        >
+                          {isPlaying ? (
+                            <>
+                              <Pause className="mr-2 h-5 w-5 lg:h-6 lg:w-6" />
+                              Pause Stream
+                            </>
+                          ) : (
+                            <>
+                              <Play className="mr-2 h-5 w-5 lg:h-6 lg:w-6" />
+                              Start Listening
+                            </>
+                          )}
+                        </Button>
+
+                        {
+                          subtitleOpen == false && (
+                            <Button
+                              onClick={() => setSubtitleOpen(true)}
+                              className="text-blue-500 hover:text-blue-600 ml-auto"
+                              size="lg"
+                            >
+                              Open Subtitles
+                            </Button>
+                          )
+                        }
+                      </>
+                    )
+                    }
+
 
                     {streamStatus.status !== 'live' && (
                       <Button
@@ -1281,7 +1298,7 @@ const Listner = () => {
           </div>
         </div> */}
       </div>
-      
+
       {
         subTitle.length > 0 && (
           <div className='h-[15rem] w-full'></div>

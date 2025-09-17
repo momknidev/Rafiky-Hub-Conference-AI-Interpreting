@@ -1,7 +1,7 @@
 "use server";
 
 import { generateToken } from "@/utils/generateToken";
-import { LanguageBotMap } from "@/constants/captionUIDs";
+import { LanguageBotMap, intrepreterUids } from "@/constants/captionUIDs";
 
 
 export async function StartCaption(channelName, language, hostUid) {
@@ -17,7 +17,7 @@ export async function StartCaption(channelName, language, hostUid) {
   
     const payload = {
       name: `stt-${Date.now()}`,
-      languages: [langCode || "en-US"],
+      languages: [langCode],
       maxIdleTime: 60,
       rtcConfig: {
         channelName,
@@ -30,10 +30,9 @@ export async function StartCaption(channelName, language, hostUid) {
       translateConfig: {
         languages: [
             {
-                source: langCode || "en-US",
+                source: langCode,
                 target: [
-                    "ar-SA",
-                    "id-ID",
+                  "en-US"
                 ]
             }
         ]
@@ -90,3 +89,44 @@ export async function StopCaption(agentId) {
     return { ok: false, error: err?.message || "Unexpected stop error" };
   }
 }
+
+export async function getRTMPUrl(channelName,language) {
+  const appId = process.env.NEXT_PUBLIC_AGORA_APPID;
+  const auth  = process.env.NEXT_PUBLIC_REST_TOKEN;
+  const base  = process.env.NEXT_PUBLIC_AGORA_API_URL || "https://api.agora.io";
+  const region = process.env.NEXT_PUBLIC_AGORA_REGION || "eu";
+
+  console.log(intrepreterUids[language].toString(), "intrepreterUids[language]");
+  const payload = {
+    settings: {
+      channel: channelName,
+      uid: intrepreterUids[language].toString(),              
+      // "expiresAfter": (4 * 60 * 60) // 4 hours
+      // "expiresAfter": 400
+      expiresAfter: 0
+    }
+  }
+  const resp = await fetch(
+    `${base}/${region}/v1/projects/${appId}/rtls/ingress/streamkeys`,
+    {
+      method: "POST",
+      headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }
+  );
+  console.log(resp, "resp");
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    return { ok: false, error: text || `Stop failed with ${resp.status}` };
+  }
+
+  const data = await resp.json();
+  const url = `rtmp://rtls-ingress-prod-eu.agoramdn.com/live/${data.data.streamKey}`;
+  return { ok: true, url };
+}
+
+// syntax = "proto3";
+// package Agora.SpeechToText;
+
+// message Word { string text = 1; bool is_final = 4; }
+// message Text { repeated Word words = 10; }

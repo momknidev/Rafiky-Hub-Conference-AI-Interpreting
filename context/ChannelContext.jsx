@@ -9,13 +9,13 @@ const ChannelContext = createContext({
 })
 
 export const ChannelProvider = ({ children}) => {
-  const [channelName, setChannelName] = useState('atk-english');
+  const [channelName, setChannelName] = useState('ai-translator');
   const [language, setLanguage] = useState('english');
 
 
-  useEffect(() => {
-    setChannelName(`atk-${language}`);
-  },[language])
+  // useEffect(() => {
+  //   setChannelName(`atk-${language}`);
+  // },[language])
 
 
 
