@@ -15,9 +15,9 @@ import Dialog from './Dialog';
 import { useChannel } from '@/context/ChannelContext';
 import { useParams } from 'next/navigation';
 import { flagsMapping } from '@/constants/flagsMapping';
-import { StartCaption, StopCaption, getRTMPUrl} from '@/services/CaptionService';
+import { StartCaption, StopCaption, getRTMPUrl } from '@/services/CaptionService';
 import { usePrototype } from '@/hooks/usePrototype';
-import { LanguageBotMap, codeToLanguage, defaultData,interpreters } from '@/constants/captionUIDs';
+import { LanguageBotMap, codeToLanguage, defaultData, interpreters } from '@/constants/captionUIDs';
 
 // Async Agora SDK loader
 const loadAgoraSDK = async () => {
@@ -49,7 +49,7 @@ const Broadcast = () => {
 
 
   const connectToInterpreter = async (language) => {
-    const {url:rtmpUrl} = await getRTMPUrl(channelName,language);
+    const { url: rtmpUrl } = await getRTMPUrl(channelName, language);
     const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}`);
     ws.onopen = () => {
       console.log("Interpreter connected");
@@ -74,7 +74,7 @@ const Broadcast = () => {
   }, []);
 
 
-  
+
 
   // Basic state
   const [isLive, setIsLive] = useState(false);
@@ -325,15 +325,15 @@ const Broadcast = () => {
           if (String(uid) === String(pubId)) {
             const bytes = new Uint8Array(data);
             const Text = protypeRef.current.lookupType("Agora.SpeechToText.Text");
-            const msg  = Text.decode(bytes);
+            const msg = Text.decode(bytes);
             if (msg.dataType === "transcribe") {
-              if(msg?.words[0]?.isFinal){
+              if (msg?.words[0]?.isFinal) {
                 console.log(msg?.words[0]?.text, "stream-message");
               }
             }
 
             if (msg.dataType === "translate") {
-              if(msg?.trans[0]?.isFinal){
+              if (msg?.trans[0]?.isFinal) {
                 console.log(msg?.trans[0]?.texts[0], msg?.trans[0]?.lang, "stream-message");
                 const lang = codeToLanguage[msg?.trans[0]?.lang];
                 websocketRefs.current[lang]?.send(JSON.stringify({ type: "translation", text: msg?.trans[0]?.texts[0], language: msg?.trans[0]?.lang }));
@@ -478,11 +478,11 @@ const Broadcast = () => {
         duration: 4000
       });
 
-      if(Object.keys(websocketRefs.current).length === 0){  
-        interpreters.forEach(language => {
-          connectToInterpreter(language);
-        });
-      }
+
+      interpreters.forEach(language => {
+        connectToInterpreter(language);
+      });
+
     } catch (error) {
       console.error("Error starting stream:", error);
 
@@ -550,6 +550,10 @@ const Broadcast = () => {
 
       toast.info("Broadcast stopped. Thank you for your interpretation!", { duration: 4000 });
 
+      interpreters.forEach(language => {
+        websocketRefs.current[language]?.close();
+      });
+
     } catch (error) {
       console.error("Error stopping stream:", error);
       setConnectionError(`Stop error: ${error.message}`);
@@ -590,7 +594,7 @@ const Broadcast = () => {
         let hostcount = res.data?.data?.broadcasters || [];
         setListenerCount(count);
         hostcount = hostcount.filter(item => item !== languageDetailsRef.current.pubId);
-        
+
         // if(hostcount.length > 0) {
         //   setBroadcasterCount(2);
         // }else{
