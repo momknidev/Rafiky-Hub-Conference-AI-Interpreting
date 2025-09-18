@@ -46,12 +46,12 @@ app.ws('/interpreter', (ws, req) => {
   const query = req.query;
   const language = query.language;
   const rtmpUrl = query.rtmpUrl;
-  const rtmpPusher = new RTMPPusher(rtmpUrl,24000);
+  const rtmpPusher = new RTMPPusher(rtmpUrl,48000,1);
   rtmpPusher.start();
 
 
     //text to speech
-    const ttsRef = textToSpeechService(rtmpPusher,{voice_id: "aura-2-thalia-en"})
+  const ttsRef = textToSpeechService(rtmpPusher,{voice_id: "aura-2-thalia-en"})
 
   console.log('WebSocket connected', query);
   ws.on('message', (msg) => {
