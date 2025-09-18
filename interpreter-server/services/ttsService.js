@@ -55,6 +55,7 @@ export const textToSpeechService = (rtmpPusher,config) => {
     ws.onerror = (error) => {
         console.log("deepgram TTS: error received");
         console.error(error);
+        clearInterval(debounceTimeout);
     }
 
     return ws;

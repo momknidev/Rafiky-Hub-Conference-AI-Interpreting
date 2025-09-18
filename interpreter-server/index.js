@@ -69,6 +69,7 @@ app.ws('/interpreter', (ws, req) => {
 
   ws.on('close', () => {
     rtmpPusher.stop();
+    ttsRef.close();
   });
 });
 
