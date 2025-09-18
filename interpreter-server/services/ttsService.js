@@ -50,7 +50,10 @@ export const textToSpeechService = (rtmpPusher,config) => {
       console.log('pushing silence');
     }
   
-    ws.onclose = () => console.log('deepgram TTS: Disconnected from the WebSocket server');
+    ws.onclose = () => {
+      console.log('deepgram TTS: Disconnected from the WebSocket server')
+      clearInterval(debounceTimeout);
+    };
   
     ws.onerror = (error) => {
         console.log("deepgram TTS: error received");
