@@ -60,7 +60,7 @@ app.ws('/interpreter', (ws, req) => {
     if(type === "translation"){
       const text = data.text;
       const language = data.language;
-      console.log('Translation received', text, language);
+      console.log('translation: ', text, language);
       ttsRef.send(JSON.stringify({ 'type': 'Speak', 'text': text }));
       ttsRef.send(JSON.stringify({ 'type': 'Flush' }));
     }
