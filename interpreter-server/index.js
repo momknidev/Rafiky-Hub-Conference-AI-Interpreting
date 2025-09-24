@@ -37,7 +37,7 @@ import waveFile from 'wavefile';
 import config from 'dotenv';
 config.config({path: '.env.local'});
 import { textToSpeechService } from './services/ttsService.js';
-
+import WebSocket from 'ws';
 const app = express();
 expressWs(app);
 
