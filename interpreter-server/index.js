@@ -61,8 +61,10 @@ app.ws('/interpreter', (ws, req) => {
       const text = data.text;
       const language = data.language;
       console.log('translation: ', text, language);
-      ttsRef.send(JSON.stringify({ 'type': 'Speak', 'text': text }));
-      ttsRef.send(JSON.stringify({ 'type': 'Flush' }));
+      if(ttsRef.readyState === WebSocket.OPEN){
+        ttsRef.send(JSON.stringify({ 'type': 'Speak', 'text': text }));
+        ttsRef.send(JSON.stringify({ 'type': 'Flush' }));
+      }
     }
       
   });
