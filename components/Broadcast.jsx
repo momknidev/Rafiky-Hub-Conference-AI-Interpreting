@@ -18,6 +18,8 @@ import { flagsMapping } from '@/constants/flagsMapping';
 import { StartCaption, StopCaption, getRTMPUrl } from '@/services/CaptionService';
 import { usePrototype } from '@/hooks/usePrototype';
 import { LanguageBotMap, codeToLanguage, defaultData, interpreters } from '@/constants/captionUIDs';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './ui/select';
+import { Input } from './ui/input';
 
 // Async Agora SDK loader
 const loadAgoraSDK = async () => {
@@ -48,9 +50,11 @@ const Broadcast = () => {
   const websocketRefs = useRef({});
 
 
+  const [ttsService, setTTSService] = useState('deepgram');
+  const [apiKey, setApiKey] = useState(''); 
   const connectToInterpreter = async (language) => {
     const { url: rtmpUrl } = await getRTMPUrl(channelName, language);
-    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}`);
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}&ttsService=${ttsService}&apiKey=${apiKey}`);
     ws.onopen = () => {
       console.log("Interpreter connected");
     };
@@ -1172,6 +1176,22 @@ const Broadcast = () => {
                 </h3>
 
                 <div className="space-y-8">
+                  <div className="p-4 bg-gray-50 rounded-2xl">
+                    <span className="text-zero-text/70 font-medium block mb-1">TTS Service</span>
+                    <Select defaultValue="deepgram" onValueChange={(value) => setTTSService(value)} disabled={isLive}>
+                      <SelectTrigger className='cursor-pointer w-full !bordor-transparent bg-white'>
+                        <SelectValue placeholder="Select TTS Service" />
+                      </SelectTrigger>
+                      <SelectContent className='bg-white border-none shadow-md'>
+                        <SelectItem value="deepgram">Deepgram</SelectItem>
+                        <SelectItem value="smallest">Smallest AI</SelectItem>
+                        <SelectItem value="cartesia">Cartesia</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    <span className="text-zero-text/70 font-medium block mb-1 mt-4">API Key</span>
+                    <Input type="text" disabled={isLive} placeholder="Enter API Key" className={"bg-white border-none placeholder:text-zero-text/70"} value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
+                  </div>
                   <div className="grid grid-cols-2 gap-6 text-sm font-inter">
                     <div className="space-y-6">
                       <div className="p-4 bg-gray-50 rounded-2xl">

@@ -36,7 +36,7 @@ import fs from 'fs';
 import waveFile from 'wavefile';
 import config from 'dotenv';
 config.config({path: '.env.local'});
-import { textToSpeechService } from './services/ttsService.js';
+import { textToSpeechDeepgram, textToSpeechSmallest, textToSpeechCartesia } from './services/ttsService.js';
 import WebSocket from 'ws';
 const app = express();
 expressWs(app);
@@ -46,12 +46,21 @@ app.ws('/interpreter', (ws, req) => {
   const query = req.query;
   const language = query.language;
   const rtmpUrl = query.rtmpUrl;
-  const rtmpPusher = new RTMPPusher(rtmpUrl,48000,1);
+  const ttsService = query.ttsService;
+  const apiKey = query.apiKey;
+  const rtmpPusher = new RTMPPusher(rtmpUrl,24000,1);
   rtmpPusher.start();
 
 
     //text to speech
-  const ttsRef = textToSpeechService(rtmpPusher,{voice_id: "aura-2-thalia-en"})
+    let ttsRef;
+    if(ttsService === "deepgram"){
+      ttsRef = textToSpeechDeepgram(rtmpPusher,{voice_id: "aura-asteria-en", apiKey: apiKey});
+    }else if(ttsService === "smallest"){
+      ttsRef = textToSpeechSmallest(rtmpPusher,{voice_id: "felix", apiKey: apiKey});
+    }else if(ttsService === "cartesia"){
+      ttsRef = textToSpeechCartesia(rtmpPusher,{voice_id: "a0e99841-438c-4a64-b679-ae501e7d6091", apiKey: apiKey});
+    }
 
   console.log('WebSocket connected', query);
   ws.on('message', (msg) => {
@@ -61,9 +70,10 @@ app.ws('/interpreter', (ws, req) => {
       const text = data.text;
       const language = data.language;
       console.log('translation: ', text, language);
-      if(ttsRef.readyState === WebSocket.OPEN){
-        ttsRef.send(JSON.stringify({ 'type': 'Speak', 'text': text }));
-        ttsRef.send(JSON.stringify({ 'type': 'Flush' }));
+      if(ttsRef.ws.readyState === WebSocket.OPEN){
+        // ttsRef.send(JSON.stringify({ 'type': 'Speak', 'text': text }));
+        // ttsRef.send(JSON.stringify({ 'type': 'Flush' }));
+        ttsRef.sendText(text);
       }
     }
       

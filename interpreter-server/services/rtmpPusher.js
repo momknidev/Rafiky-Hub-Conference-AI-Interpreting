@@ -3,7 +3,7 @@ import ffmpeg from 'fluent-ffmpeg';
 
 
 export class SmoothAudioStreamer {
-    constructor(outputStream, frameDurationMs = 20, sampleRate = 48000, channels = 2, sampleSize = 2) {
+    constructor(outputStream, frameDurationMs = 20, sampleRate = 24000, channels = 2, sampleSize = 2) {
         this.outputStream = outputStream;
         this.frameDurationMs = frameDurationMs;
         this.sampleRate = sampleRate;
@@ -44,7 +44,7 @@ export class SmoothAudioStreamer {
 }
 
 export class RTMPPusher {
-    constructor(rtmpUrl, sampleRate = 48000, channels = 2, frameDurationMs = 20, sampleSize = 2) {
+    constructor(rtmpUrl, sampleRate = 24000, channels = 2, frameDurationMs = 20, sampleSize = 2) {
         this.rtmpUrl = rtmpUrl;
         this.sampleRate = sampleRate;
         this.channels = channels;
