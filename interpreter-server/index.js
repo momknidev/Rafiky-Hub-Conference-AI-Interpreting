@@ -48,7 +48,7 @@ app.ws('/interpreter', (ws, req) => {
   const rtmpUrl = query.rtmpUrl;
   const ttsService = query.ttsService;
   const apiKey = query.apiKey;
-  const rtmpPusher = new RTMPPusher(rtmpUrl,24000,1);
+  const rtmpPusher = new RTMPPusher(rtmpUrl,48000,1);
   rtmpPusher.start();
 
 
