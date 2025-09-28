@@ -269,7 +269,9 @@ const Broadcast = () => {
         setConnectionError(null);
         setNetworkQuality('good'); // Reset network quality on reconnect
       } else if (curState === 'DISCONNECTED' && isLive && connectionStatus === 'connected') {
-        handleConnectionLoss();
+        //handleConnectionLoss();
+        window.alert('Connection issue! Please restart the broadcasting!')
+        handleStopStream();
       } else if (curState === 'RECONNECTING') {
         setConnectionStatus('reconnecting');
         toast.info('Connection unstable, attempting to stabilize...', {
@@ -289,7 +291,7 @@ const Broadcast = () => {
 
       if (evt.code === 'NETWORK_ERROR' && isLive && connectionStatus === 'connected') {
         setNetworkQuality('poor');
-        handleConnectionLoss();
+        //handleConnectionLoss();
       } else if (evt.code === 'MEDIA_ERROR') {
         toast.error('Microphone error detected. Please check your audio device.', {
           id: 'media-error',
@@ -1068,6 +1070,12 @@ const Broadcast = () => {
                   {/* Main Action Button */}
                   <div className="text-center">
                     {
+                      loading ? <Button
+                          className="w-full bg-zero-green text-zero-text hover:bg-zero-green/90 text-2xl px-12 py-10 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-2xl shadow-xl"
+                          size="lg"
+                        >
+                          Loading
+                        </Button>:
                       (broadcasterCount > 1 && !isLive && !loading) ? (
                         <Button
                           onClick={sendRequestToHandover}
@@ -1100,23 +1108,26 @@ const Broadcast = () => {
                   </div>
 
                   {/* Connection Controls */}
-                  {(connectionStatus === 'error' || isReconnecting || connectionError) && (
-                    <div className="space-y-4">
-                      <Button
-                        onClick={handleForceReconnect}
-                        className="w-full bg-blue-600 text-white hover:bg-blue-700 font-inter font-semibold py-4 rounded-xl"
-                        disabled={isReconnecting}
-                      >
-                        <RefreshCcw className={`mr-2 h-5 w-5 ${isReconnecting ? 'animate-spin' : ''}`} />
-                        {isReconnecting ? 'Reconnecting...' : 'Force Reconnect'}
-                      </Button>
-                      {connectionError && (
-                        <div className="text-center bg-red-50 p-4 rounded-xl">
-                          <p className="text-sm text-red-600">{connectionError}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  {/* 
+{(connectionStatus === 'error' || isReconnecting || connectionError) && (
+  <div className="space-y-4">
+    <Button
+      onClick={handleForceReconnect}
+      className="w-full bg-blue-600 text-white hover:bg-blue-700 font-inter font-semibold py-4 rounded-xl"
+      disabled={isReconnecting}
+    >
+      <RefreshCcw className={`mr-2 h-5 w-5 ${isReconnecting ? 'animate-spin' : ''}`} />
+      {isReconnecting ? 'Reconnecting...' : 'Force Reconnect'}
+    </Button>
+    {connectionError && (
+      <div className="text-center bg-red-50 p-4 rounded-xl">
+        <p className="text-sm text-red-600">{connectionError}</p>
+      </div>
+    )}
+  </div>
+)}
+*/} 
+
 
                   {!isMicConnected && (
                     <div className="text-center bg-orange-50 p-8 rounded-3xl border border-orange-200">
@@ -1183,14 +1194,22 @@ const Broadcast = () => {
                         <SelectValue placeholder="Select TTS Service" />
                       </SelectTrigger>
                       <SelectContent className='bg-white border-none shadow-md'>
-                        <SelectItem value="deepgram">Deepgram</SelectItem>
-                        <SelectItem value="smallest">Smallest AI</SelectItem>
-                        <SelectItem value="cartesia">Cartesia</SelectItem>
+                        <SelectItem value="cartesia">Primary </SelectItem>
+                        <SelectItem value="deepgram">Backup 1</SelectItem>
+                        <SelectItem value="smallest">Backup 2</SelectItem>
+                        
                       </SelectContent>
                     </Select>
 
-                    <span className="text-zero-text/70 font-medium block mb-1 mt-4">API Key</span>
-                    <Input type="text" disabled={isLive} placeholder="Enter API Key" className={"bg-white border-none placeholder:text-zero-text/70"} value={apiKey} onChange={(e) => setApiKey(e.target.value)} />
+                    {/* <span className="text-zero-text/70 font-medium block mb-1 mt-4">API Key</span>
+<Input 
+  type="text" 
+  disabled={isLive} 
+  placeholder="Enter API Key" 
+  className={"bg-white border-none placeholder:text-zero-text/70"} 
+  value={apiKey} 
+  onChange={(e) => setApiKey(e.target.value)} 
+/> */}
                   </div>
                   <div className="grid grid-cols-2 gap-6 text-sm font-inter">
                     <div className="space-y-6">
@@ -1266,24 +1285,26 @@ const Broadcast = () => {
                     </div>
                   )}
 
-                  {/* Connection Issues Warning */}
-                  {(connectionStatus === 'error' || reconnectAttempts >= maxReconnectAttempts || connectionError) && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-6">
-                      <div className="flex items-center gap-3 mb-3">
-                        <AlertCircle className="h-5 w-5 text-red-600" />
-                        <span className="font-bold text-red-800">Critical Connection Issues</span>
-                      </div>
-                      <p className="text-sm text-red-700 mb-4">
-                        {connectionError || 'The broadcast has experienced connection problems. Listeners may be affected.'}
-                      </p>
-                      <Button
-                        onClick={handleStopStream}
-                        className="w-full bg-red-600 text-white hover:bg-red-700 font-inter font-semibold py-2 rounded-xl"
-                      >
-                        Stop and Restart Broadcast
-                      </Button>
-                    </div>
-                  )}
+                  {/* 
+  {(connectionStatus === 'error' || reconnectAttempts >= maxReconnectAttempts || connectionError) && (
+    <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+      <div className="flex items-center gap-3 mb-3">
+        <AlertCircle className="h-5 w-5 text-red-600" />
+        <span className="font-bold text-red-800">Critical Connection Issues</span>
+      </div>
+      <p className="text-sm text-red-700 mb-4">
+        {connectionError || 'The broadcast has experienced connection problems. Listeners may be affected.'}
+      </p>
+      <Button
+        onClick={handleStopStream}
+        className="w-full bg-red-600 text-white hover:bg-red-700 font-inter font-semibold py-2 rounded-xl"
+      >
+        Stop and Restart Broadcast
+      </Button>
+    </div>
+  )}
+*/} 
+
                 </div>
               </div>
             </Card>
