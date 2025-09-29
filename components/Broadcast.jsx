@@ -1189,7 +1189,7 @@ const Broadcast = () => {
                 <div className="space-y-8">
                   <div className="p-4 bg-gray-50 rounded-2xl">
                     <span className="text-zero-text/70 font-medium block mb-1">TTS Service</span>
-                    <Select defaultValue="deepgram" onValueChange={(value) => setTTSService(value)} disabled={isLive}>
+                    <Select defaultValue="cartesia" onValueChange={(value) => setTTSService(value)} disabled={isLive}>
                       <SelectTrigger className='cursor-pointer w-full !bordor-transparent bg-white'>
                         <SelectValue placeholder="Select TTS Service" />
                       </SelectTrigger>
