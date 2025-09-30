@@ -202,12 +202,12 @@ export const textToSpeechCartesia = (rtmpPusher, cfg) => {
   });
 
   ws.on('close', () => {
-    console.log('waves TTS: Disconnected');
+    console.log('cartesia TTS: Disconnected');
     if (pingInterval) clearInterval(pingInterval);
   });
 
   ws.on('error', (err) => {
-    console.error('waves TTS: error', err);
+    console.error('cartesia TTS: error', err);
     if (pingInterval) clearInterval(pingInterval);
   });
 

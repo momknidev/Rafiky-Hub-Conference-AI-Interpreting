@@ -50,7 +50,7 @@ const Broadcast = () => {
   const websocketRefs = useRef({});
 
 
-  const [ttsService, setTTSService] = useState('deepgram');
+  const [ttsService, setTTSService] = useState('cartesia');
   const [apiKey, setApiKey] = useState(''); 
   const connectToInterpreter = async (language) => {
     const { url: rtmpUrl } = await getRTMPUrl(channelName, language);

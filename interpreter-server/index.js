@@ -48,8 +48,11 @@ app.ws('/interpreter', (ws, req) => {
   const rtmpUrl = query.rtmpUrl;
   const ttsService = query.ttsService;
   const apiKey = query.apiKey;
+  const config = {
+    isDisconnected: false,
+  }
   const rtmpPusher = new RTMPPusher(rtmpUrl,48000,1);
-  rtmpPusher.start();
+  rtmpPusher.start(config);
 
 
     //text to speech
@@ -80,6 +83,7 @@ app.ws('/interpreter', (ws, req) => {
   });
 
   ws.on('close', () => {
+    config.isDisconnected = true;
     rtmpPusher.stop();
     ttsRef.close();
   });

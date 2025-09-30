@@ -63,7 +63,7 @@ export class RTMPPusher {
         this.ffmpegProcess = null;
     }
 
-    start() {
+    start(config) {
         this.streamer.start();
 
         this.ffmpegProcess = ffmpeg(this.outputStream)
@@ -74,7 +74,13 @@ export class RTMPPusher {
             .format('flv')
             .output(this.rtmpUrl)
             .on('start', () => console.log('FFmpeg started'))
-            .on('error', (err) => console.error('FFmpeg error:', err))
+            .on('error', (err) => {
+                console.error('FFmpeg error:', err);
+                if(!config.isDisconnected){
+                    console.log('FFmpeg error, retrying...');
+                   this.start(config);
+                }
+            })
             .on('end', () => console.log('FFmpeg ended'))
             .run();
 
