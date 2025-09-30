@@ -78,15 +78,22 @@ app.ws('/interpreter', (ws, req) => {
         // ttsRef.send(JSON.stringify({ 'type': 'Flush' }));
         ttsRef.sendText(text);
       }
+    }else if(type === "pong"){
+      console.log("pong received");
     }
-      
   });
+
+  //ping
+  const pingInterval = setInterval(() => {
+    ws.send(JSON.stringify({ type: 'ping' }));
+  }, 3000);
 
   ws.on('close', () => {
     console.log('WebSocket closed');
     config.isDisconnected = true;
     rtmpPusher.stop();
     ttsRef.close();
+    clearInterval(pingInterval);
   });
 });
 

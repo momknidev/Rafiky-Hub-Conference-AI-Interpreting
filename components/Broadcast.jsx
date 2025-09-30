@@ -59,7 +59,11 @@ const Broadcast = () => {
       console.log("Interpreter connected");
     };
     ws.onmessage = (event) => {
-      console.log("Interpreter message", event.data);
+      const data = JSON.parse(event.data);
+      if(data.type == "ping"){
+        console.log("ping received");
+        ws.send(JSON.stringify({ type: 'pong' }));
+      }
     };
     ws.onclose = () => {
       console.log("Interpreter disconnected");
