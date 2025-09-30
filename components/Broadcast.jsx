@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import OnAirIndicator from '@/components/OnAirIndicator';
 import AudioLevelMeter from '@/components/AudioLevelMeter';
 import ListenerCountBadge from '@/components/ListenerCountBadge';
-import { Mic, MicOff, ArrowLeft, RefreshCcw, Monitor, Radio, BarChart3, Settings, Wifi, Clock, Users, Signal, Activity, Globe, Headphones, AlertCircle, CheckCircle } from 'lucide-react';
+import { Mic, MicOff, ArrowLeft, RefreshCcw, Monitor, Radio, BarChart3, Settings, Wifi, Clock, Users, Signal, Activity, Globe, Headphones, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getBroadcastInfoRequest } from '@/http/agoraHttp';
 import { generateToken } from '@/utils/generateToken';
@@ -51,7 +51,7 @@ const Broadcast = () => {
 
 
   const [ttsService, setTTSService] = useState('cartesia');
-  const [apiKey, setApiKey] = useState(''); 
+  const [apiKey, setApiKey] = useState('');
   const connectToInterpreter = async (language) => {
     const { url: rtmpUrl } = await getRTMPUrl(channelName, language);
     const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}&ttsService=${ttsService}&apiKey=${apiKey}`);
@@ -60,7 +60,7 @@ const Broadcast = () => {
     };
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if(data.type == "ping"){
+      if (data.type == "ping") {
         console.log("ping received");
         ws.send(JSON.stringify({ type: 'pong' }));
       }
@@ -832,7 +832,7 @@ const Broadcast = () => {
   }
 
   return (
-    <>
+    <div className='monstant-font'>
       {
         waitingForResponseToHandoverRquestPopup && (
           <Dialog>
@@ -870,18 +870,10 @@ const Broadcast = () => {
       }
       <div className="min-h-screen bg-zero-beige">
         {/* Modern Header */}
-        <header className="bg-zero-navy text-white p-6 sticky top-0 z-50 backdrop-blur-xl border-b border-white/10">
+        <header className="bg-gray-200 text-white p-6 sticky top-0 z-50 backdrop-blur-xl border-b border-white/10">
           <div className="container mx-auto flex justify-between items-center">
             <div className="flex items-center gap-6">
-              <div className="w-14 h-14 bg-gradient-to-br from-zero-green to-zero-blue rounded-2xl flex items-center justify-center shadow-xl">
-                <Radio className="h-7 w-7 text-zero-text" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-playfair font-bold tracking-tight">
-                  Rafiky Broadcaster
-                </h1>
-                <p className="text-sm text-white/70 font-inter font-medium">Professional Broadcasting Dashboard</p>
-              </div>
+              <img src="/images/main-logo.png" alt="logo" className="w-[12rem] object-contain" />
             </div>
 
             <div className="flex items-center gap-6">
@@ -924,143 +916,6 @@ const Broadcast = () => {
 
         {/* Main Content */}
         <main className="container mx-auto p-8 max-w-7xl">
-          {/* Festival Hero Section */}
-          {/* <div className="mb-12 relative overflow-hidden rounded-3xl bg-gradient-to-br from-zero-green/20 via-zero-blue/10 to-zero-navy/20 backdrop-blur-sm shadow-2xl border border-white/20">
-          <div className="absolute inset-0 bg-gradient-to-r from-zero-green/5 to-zero-blue/5"></div>
-          <div className="relative p-12">
-            <div className="mb-8 h-32 bg-gradient-to-r from-zero-green to-zero-blue rounded-2xl flex items-center justify-center shadow-lg">
-              <div className="text-center text-white">
-                <h3 className="text-2xl font-playfair font-bold">GB FESTIVAL</h3>
-                <p className="text-sm opacity-90 font-inter">Green & Blue Festival</p>
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <h2 className="text-5xl font-playfair font-bold text-zero-text mb-4 tracking-tight">
-                Green & Blue Festival 2025
-              </h2>
-              <p className="text-2xl font-inter text-zero-text/80 mb-8 font-light">
-                Live English Interpretation Broadcasting
-              </p>
-              
-              <div className="flex items-center justify-center gap-6 flex-wrap">
-                <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg">
-                  <Mic className="h-5 w-5 text-zero-blue" />
-                  <span className="font-semibold text-zero-text font-inter">Professional Audio</span>
-                </div>
-                <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg">
-                  <Signal className="h-5 w-5 text-zero-green" />
-                  <span className="font-semibold text-zero-text font-inter">Auto-Recovery</span>
-                </div>
-                <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm px-6 py-3 rounded-full shadow-lg">
-                  <Wifi className="h-5 w-5 text-zero-navy" />
-                  <span className="font-semibold text-zero-text font-inter">Enhanced Stability</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div> */}
-
-          {/* Status Cards Row */}
-          <div className="grid gap-8 md:grid-cols-4 mb-12">
-            {/* Stream Status */}
-            <Card className="bg-white/90 backdrop-blur-xl shadow-xl border-0 rounded-3xl">
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 bg-red-50 rounded-2xl">
-                    <Radio className="h-8 w-8 text-red-600" />
-                  </div>
-                  <div className={`w-5 h-5 rounded-full ${isLive ? 'bg-zero-status-good animate-pulse' : 'bg-gray-400'}`} />
-                </div>
-
-                <div className="space-y-3">
-                  <div className="text-3xl font-playfair font-bold text-zero-text">
-                    {isLive ? 'LIVE' : 'OFFLINE'}
-                  </div>
-                  {isLive && (
-                    <div className="text-sm text-zero-text/70 font-inter font-medium">
-                      Duration: {formatDuration(streamDuration)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-
-            {/* Microphone Status */}
-            <Card className="bg-white/90 backdrop-blur-xl shadow-xl border-0 rounded-3xl">
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div className={`p-4 rounded-2xl ${isMicConnected ? 'bg-emerald-50' : 'bg-orange-50'}`}>
-                    {isMicConnected ?
-                      <Mic className="h-8 w-8 text-emerald-600" /> :
-                      <MicOff className="h-8 w-8 text-orange-600" />
-                    }
-                  </div>
-                  <Button
-                    onClick={handleReconnect}
-                    size="sm"
-                    variant="outline"
-                    className="text-xs font-medium"
-                    disabled={isMicConnected}
-                  >
-                    <RefreshCcw className="h-4 w-4 mr-1" />
-                    {isMicConnected ? 'Connected' : 'Reconnect'}
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  <div className={`text-lg font-bold font-inter ${isMicConnected ? 'text-zero-status-good' : 'text-zero-warning'}`}>
-                    {isMicConnected ? 'Connected' : 'Not Detected'}
-                  </div>
-                  <div className="text-xs text-zero-text/60 font-inter">
-                    {isMicConnected ? 'Audio input ready' : 'Check permissions'}
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Audience */}
-            <Card className="bg-white/90 backdrop-blur-xl shadow-xl border-0 rounded-3xl">
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 bg-blue-50 rounded-2xl">
-                    <Users className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <Monitor className="h-6 w-6 text-zero-blue" />
-                </div>
-
-                <div className="space-y-3">
-                  <div className="text-3xl font-playfair font-bold text-zero-text">
-                    {listenerCount}
-                  </div>
-                  <div className="text-sm text-zero-text/70 font-inter font-medium">
-                    {listenerCount === 1 ? 'listener' : 'listeners'}
-                  </div>
-                </div>
-              </div>
-            </Card>
-
-            {/* Network Quality */}
-            <Card className="bg-white/90 backdrop-blur-xl shadow-xl border-0 rounded-3xl">
-              <div className="p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="p-4 bg-emerald-50 rounded-2xl">
-                    <Wifi className="h-8 w-8 text-emerald-600" />
-                  </div>
-                  <Signal className={`h-6 w-6 ${getNetworkColor()}`} />
-                </div>
-
-                <div className="space-y-3">
-                  <div className={`text-lg font-bold font-inter ${getNetworkColor()}`}>
-                    {networkQuality}
-                  </div>
-                  <div className="text-xs text-zero-text/60 font-inter">
-                    Network Quality
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </div>
 
           <div className="grid gap-10 lg:grid-cols-2">
             {/* Main Controls */}
@@ -1075,63 +930,42 @@ const Broadcast = () => {
                   <div className="text-center">
                     {
                       loading ? <Button
-                          className="w-full bg-zero-green text-zero-text hover:bg-zero-green/90 text-2xl px-12 py-10 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-2xl shadow-xl"
-                          size="lg"
-                        >
-                          Loading...
-                        </Button>
-                      :
-                      (broadcasterCount > 1 && !isLive && !loading) ? (
-                        <Button
-                          onClick={sendRequestToHandover}
-                          className="w-full bg-zero-green text-zero-text hover:bg-zero-green/90 text-2xl px-12 py-10 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-2xl shadow-xl"
-                          size="lg"
-                        >
-                          Request Handover
-                        </Button>
-                      ) : !isLive ? (
-                        <Button
-                          onClick={handleStartStream}
-                          disabled={!isMicConnected || isReconnecting}
-                          className="w-full bg-zero-green text-zero-text hover:bg-zero-green/90 text-2xl px-12 py-10 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-2xl shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                          size="lg"
-                        >
-                          <Mic className="mr-4 h-10 w-10" />
-                          Start Broadcasting
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={handleStopStream}
-                          variant="outline"
-                          className="w-full border-zero-warning text-zero-warning hover:bg-zero-warning hover:text-white text-2xl px-12 py-10 font-bold font-inter rounded-2xl shadow-xl"
-                          size="lg"
-                        >
-                          <MicOff className="mr-4 h-10 w-10" />
-                          Stop Broadcasting
-                        </Button>
-                      )}
+                        className="w-full bg-zero-green text-white hover:bg-zero-green/90 text-2xl px-12 py-10 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-2xl shadow-xl"
+                        size="lg"
+                      >
+                        <Loader2 className="mr-4 h-10 w-10 animate-spin" />
+                      </Button>
+                        :
+                        (broadcasterCount > 1 && !isLive && !loading) ? (
+                          <Button
+                            onClick={sendRequestToHandover}
+                            className="w-full bg-zero-green text-white hover:bg-zero-green/90 text-2xl px-12 py-10 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-2xl shadow-xl"
+                            size="lg"
+                          >
+                            Request Handover
+                          </Button>
+                        ) : !isLive ? (
+                          <Button
+                            onClick={handleStartStream}
+                            disabled={!isMicConnected || isReconnecting}
+                            className="w-full bg-zero-green text-white hover:bg-zero-green/90 text-2xl px-12 py-10 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-2xl shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            size="lg"
+                          >
+                            <Mic className="mr-4 h-10 w-10" />
+                            On Air
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={handleStopStream}
+                            variant="outline"
+                            className="w-full border-zero-warning text-red-500 hover:bg-zero-warning hover:text-white text-2xl px-12 py-10 font-bold font-inter rounded-2xl shadow-xl"
+                            size="lg"
+                          >
+                            <MicOff className="mr-4 h-10 w-10" />
+                            Off Air
+                          </Button>
+                        )}
                   </div>
-
-                  {/* Connection Controls */}
-                  {/* 
-{(connectionStatus === 'error' || isReconnecting || connectionError) && (
-  <div className="space-y-4">
-    <Button
-      onClick={handleForceReconnect}
-      className="w-full bg-blue-600 text-white hover:bg-blue-700 font-inter font-semibold py-4 rounded-xl"
-      disabled={isReconnecting}
-    >
-      <RefreshCcw className={`mr-2 h-5 w-5 ${isReconnecting ? 'animate-spin' : ''}`} />
-      {isReconnecting ? 'Reconnecting...' : 'Force Reconnect'}
-    </Button>
-    {connectionError && (
-      <div className="text-center bg-red-50 p-4 rounded-xl">
-        <p className="text-sm text-red-600">{connectionError}</p>
-      </div>
-    )}
-  </div>
-)}
-*/} 
 
 
                   {!isMicConnected && (
@@ -1159,7 +993,7 @@ const Broadcast = () => {
                         onClick={handleMicToggle}
                         variant="outline"
                         size="sm"
-                        className="border-zero-navy text-zero-navy hover:bg-zero-navy hover:text-white font-inter font-medium"
+                        className="border-zero-navy text-zero-text hover:bg-zero-navy hover:text-white font-inter font-medium"
                         disabled={isLive}
                       >
                         {isMicConnected ? 'Disconnect' : 'Connect'}
@@ -1202,19 +1036,9 @@ const Broadcast = () => {
                         <SelectItem value="cartesia">Primary </SelectItem>
                         <SelectItem value="deepgram">Backup 1</SelectItem>
                         <SelectItem value="smallest">Backup 2</SelectItem>
-                        
+
                       </SelectContent>
                     </Select>
-
-                    {/* <span className="text-zero-text/70 font-medium block mb-1 mt-4">API Key</span>
-<Input 
-  type="text" 
-  disabled={isLive} 
-  placeholder="Enter API Key" 
-  className={"bg-white border-none placeholder:text-zero-text/70"} 
-  value={apiKey} 
-  onChange={(e) => setApiKey(e.target.value)} 
-/> */}
                   </div>
                   <div className="grid grid-cols-2 gap-6 text-sm font-inter">
                     <div className="space-y-6">
@@ -1289,73 +1113,15 @@ const Broadcast = () => {
                       </div>
                     </div>
                   )}
-
-                  {/* 
-  {(connectionStatus === 'error' || reconnectAttempts >= maxReconnectAttempts || connectionError) && (
-    <div className="bg-red-50 border border-red-200 rounded-xl p-6">
-      <div className="flex items-center gap-3 mb-3">
-        <AlertCircle className="h-5 w-5 text-red-600" />
-        <span className="font-bold text-red-800">Critical Connection Issues</span>
-      </div>
-      <p className="text-sm text-red-700 mb-4">
-        {connectionError || 'The broadcast has experienced connection problems. Listeners may be affected.'}
-      </p>
-      <Button
-        onClick={handleStopStream}
-        className="w-full bg-red-600 text-white hover:bg-red-700 font-inter font-semibold py-2 rounded-xl"
-      >
-        Stop and Restart Broadcast
-      </Button>
-    </div>
-  )}
-*/} 
-
                 </div>
               </div>
             </Card>
           </div>
 
-          {/* Broadcasting Tips */}
-          <Card className="mt-12 bg-gradient-to-br from-zero-green/5 to-zero-blue/5 backdrop-blur-xl border-0 rounded-3xl shadow-2xl">
-            <div className="p-10">
-              <h3 className="text-3xl font-playfair font-bold text-zero-text mb-10 text-center">
-                Professional Broadcasting with Enhanced Auto-Recovery
-              </h3>
-              <div className="grid md:grid-cols-4 gap-8 text-sm font-inter">
-                <div className="text-center p-8 bg-white/60 rounded-3xl">
-                  <div className="w-16 h-16 bg-zero-blue/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Mic className="h-8 w-8 text-zero-blue" />
-                  </div>
-                  <div className="font-bold text-zero-text mb-3 text-lg">Audio Excellence</div>
-                  <p className="text-zero-text/70 leading-relaxed">Professional microphone with noise suppression and automatic quality monitoring</p>
-                </div>
-                <div className="text-center p-8 bg-white/60 rounded-3xl">
-                  <div className="w-16 h-16 bg-zero-green/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Wifi className="h-8 w-8 text-zero-green" />
-                  </div>
-                  <div className="font-bold text-zero-text mb-3 text-lg">Smart Recovery</div>
-                  <p className="text-zero-text/70 leading-relaxed">Advanced reconnection system maintains broadcast stability and automatically resumes listener connections</p>
-                </div>
-                <div className="text-center p-8 bg-white/60 rounded-3xl">
-                  <div className="w-16 h-16 bg-zero-navy/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Activity className="h-8 w-8 text-zero-navy" />
-                  </div>
-                  <div className="font-bold text-zero-text mb-3 text-lg">Real-time Monitoring</div>
-                  <p className="text-zero-text/70 leading-relaxed">Comprehensive connection monitoring with network quality assessment and listener tracking</p>
-                </div>
-                <div className="text-center p-8 bg-white/60 rounded-3xl">
-                  <div className="w-16 h-16 bg-zero-warning/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Settings className="h-8 w-8 text-zero-warning" />
-                  </div>
-                  <div className="font-bold text-zero-text mb-3 text-lg">Professional Interface</div>
-                  <p className="text-zero-text/70 leading-relaxed">Streamlined controls optimized for professional interpretation with session tracking</p>
-                </div>
-              </div>
-            </div>
-          </Card>
+
         </main>
       </div>
-    </>
+    </div>
   );
 };
 
