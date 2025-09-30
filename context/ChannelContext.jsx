@@ -9,7 +9,7 @@ const ChannelContext = createContext({
 })
 
 export const ChannelProvider = ({ children}) => {
-  const [channelName, setChannelName] = useState('test-channel-2');
+  const [channelName, setChannelName] = useState('debugging-channel');
   const [language, setLanguage] = useState('english');
 
 

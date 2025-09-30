@@ -1074,8 +1074,9 @@ const Broadcast = () => {
                           className="w-full bg-zero-green text-zero-text hover:bg-zero-green/90 text-2xl px-12 py-10 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-2xl shadow-xl"
                           size="lg"
                         >
-                          Loading
-                        </Button>:
+                          Loading...
+                        </Button>
+                      :
                       (broadcasterCount > 1 && !isLive && !loading) ? (
                         <Button
                           onClick={sendRequestToHandover}

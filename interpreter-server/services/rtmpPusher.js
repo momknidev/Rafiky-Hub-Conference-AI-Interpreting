@@ -11,8 +11,30 @@ export class SmoothAudioStreamer {
         this.sampleSize = sampleSize;
         this.frameSize = Math.floor((sampleRate * frameDurationMs) / 1000) * channels * sampleSize;
         this.buffer = Buffer.alloc(0);
-        this.silence = Buffer.alloc(this.frameSize, 0x00);
+        // this.silence = Buffer.alloc(this.frameSize, 0x00);
         this.timer = null;
+
+
+
+        this.prevNoise = 0; // last noise value
+        this.alpha = 0.98;  // smoothing factor
+        this.noiseLevel = 100; // max noise variation
+        this.silence = this.generateSmoothSilence();
+    }
+
+
+    generateSmoothSilence() {
+        const buf = Buffer.alloc(this.frameSize, 0x00);
+
+        for (let i = 0; i < buf.length; i += 2) {
+            // smooth random noise
+            const rand = Math.floor(Math.random() * (2 * this.noiseLevel + 1)) - this.noiseLevel;
+            this.prevNoise = this.alpha * this.prevNoise + (1 - this.alpha) * rand;
+
+            let sample = Math.round(this.prevNoise);
+            buf.writeInt16LE(sample, i);
+        }
+        return buf;
     }
 
     start() {
