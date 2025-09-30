@@ -83,6 +83,7 @@ app.ws('/interpreter', (ws, req) => {
   });
 
   ws.on('close', () => {
+    console.log('WebSocket closed');
     config.isDisconnected = true;
     rtmpPusher.stop();
     ttsRef.close();
