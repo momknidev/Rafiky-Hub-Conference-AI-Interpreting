@@ -49,7 +49,7 @@ const NotFound = () => {
                   <Home className="mr-3 h-5 w-5" />
                   Go Home
                 </Button>
-              </a>
+              </a>             
               
               <Button 
                 size="lg"
