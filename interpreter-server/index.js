@@ -42,6 +42,24 @@ const app = express();
 expressWs(app);
 
 
+export const languageToCode = {
+  english: "en",
+  french: "fr",
+  german: "de",
+  spanish: "es",
+  portuguese: "pt",
+  chinese: "zh",
+  japanese: "ja",
+  hindi: "hi",
+  italian: "it",
+  korean: "ko",
+  dutch: "nl",
+  polish: "pl",
+  russian: "ru",
+  swedish: "sv",
+  turkish: "tr",
+};
+
 app.ws('/interpreter', (ws, req) => {
   const query = req.query;
   const language = query.language;
@@ -51,6 +69,8 @@ app.ws('/interpreter', (ws, req) => {
   const config = {
     isDisconnected: false,
   }
+
+  
   const rtmpPusher = new RTMPPusher(rtmpUrl,48000,1);
   rtmpPusher.start(config);
 
@@ -58,11 +78,11 @@ app.ws('/interpreter', (ws, req) => {
     //text to speech
     let ttsRef;
     if(ttsService === "deepgram"){
-      ttsRef = textToSpeechDeepgram(rtmpPusher,{voice_id: "aura-asteria-en", apiKey: apiKey});
+      ttsRef = textToSpeechDeepgram(rtmpPusher,{voice_id: "aura-asteria-en", apiKey: apiKey,language: languageToCode[language]});
     }else if(ttsService === "smallest"){
-      ttsRef = textToSpeechSmallest(rtmpPusher,{voice_id: "felix", apiKey: apiKey});
+      ttsRef = textToSpeechSmallest(rtmpPusher,{voice_id: "felix", apiKey: apiKey,language: languageToCode[language]});
     }else if(ttsService === "cartesia"){
-      ttsRef = textToSpeechCartesia(rtmpPusher,{voice_id: "a0e99841-438c-4a64-b679-ae501e7d6091", apiKey: apiKey});
+      ttsRef = textToSpeechCartesia(rtmpPusher,{voice_id: "a0e99841-438c-4a64-b679-ae501e7d6091", apiKey: apiKey,language: languageToCode[language]});
     }
 
   console.log('WebSocket connected', query);

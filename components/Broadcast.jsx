@@ -13,8 +13,8 @@ import Pusher from 'pusher-js';
 import { pushMessage } from '@/services/PusherService';
 import Dialog from './Dialog';
 import { useChannel } from '@/context/ChannelContext';
-import { useParams } from 'next/navigation';
-import { flagsMapping } from '@/constants/flagsMapping';
+import { useParams, useRouter } from 'next/navigation';
+import { flagsMapping, languages } from '@/constants/flagsMapping';
 import { StartCaption, StopCaption, getRTMPUrl } from '@/services/CaptionService';
 import { usePrototype } from '@/hooks/usePrototype';
 import { LanguageBotMap, codeToLanguage, defaultData, interpreters } from '@/constants/captionUIDs';
@@ -48,6 +48,7 @@ const Broadcast = () => {
   const [loading, setLoading] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
   const websocketRefs = useRef({});
+  const router = useRouter();
 
 
   const [ttsService, setTTSService] = useState('cartesia');
@@ -489,7 +490,7 @@ const Broadcast = () => {
       });
 
 
-      interpreters.forEach(language => {
+      interpreters.filter(lang => lang !== language).forEach(language => {
         connectToInterpreter(language);
       });
 
@@ -560,7 +561,7 @@ const Broadcast = () => {
 
       toast.info("Broadcast stopped. Thank you for your interpretation!", { duration: 4000 });
 
-      interpreters.forEach(language => {
+      interpreters.filter(lang => lang !== language).forEach(language => {
         websocketRefs.current[language]?.close();
       });
 
@@ -916,7 +917,6 @@ const Broadcast = () => {
 
         {/* Main Content */}
         <main className="container mx-auto p-8 max-w-7xl">
-
           <div className="grid gap-10 lg:grid-cols-2">
             {/* Main Controls */}
             <Card className="bg-white/90 backdrop-blur-xl shadow-2xl border-0 rounded-3xl overflow-hidden">
@@ -924,6 +924,25 @@ const Broadcast = () => {
                 <h3 className="text-4xl font-playfair font-bold text-zero-text mb-10 text-center">
                   Broadcast Controls
                 </h3>
+
+                <div>
+                  <span className="text-zero-text/70 font-medium block mb-1">Source Language</span>
+                  <Select
+                    defaultValue={language}
+                    onValueChange={(value) => router.push(`/booth/${value}`)}
+                  >
+                    <SelectTrigger className='cursor-pointer w-full !bordor-transparent bg-white mb-3 border-gray-100 shadow-md'>
+                      <SelectValue placeholder="Select Language" className='flex items-center gap-2 cursor-pointer'><img src={flagsMapping[language]} alt={language} className='w-6 h-6' />{language?.slice(0, 1).toUpperCase()}{language?.slice(1).toLowerCase()}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent className='bg-white border-none shadow-md'>
+                      {
+                        languages.map((language) => (
+                          <SelectItem value={language.value} key={language.value} className='flex items-center gap-2 cursor-pointer'><img src={language.flag} alt={language.name} className='w-6 h-6' />{language.name}</SelectItem>
+                        ))
+                      }
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <div className="space-y-10">
                   {/* Main Action Button */}

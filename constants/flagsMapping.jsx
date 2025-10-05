@@ -10,6 +10,7 @@ export const flagsMapping = {
     arabic: '/flags/sa.svg',
     czech: '/flags/cz.svg',
     hungarian: '/flags/hu.svg',
+    russian: '/flags/ru.svg',
 }
 
 export const languages = [
@@ -23,49 +24,54 @@ export const languages = [
         value: 'english',
         flag: '/flags/gb-eng.svg',
     },
+    // {
+    //     name: 'GERMAN',
+    //     value: 'german',
+    //     flag: '/flags/de.svg',
+    // },
+    // {
+    //     name: 'FRENCH',
+    //     value: 'french',
+    //     flag: '/flags/fr.svg',
+    // },
+    // {
+    //     name: 'ROMANIAN',
+    //     value: 'romanian',
+    //     flag: '/flags/ro.svg',
+    // },
+    // {
+    //     name: 'CROATIAN',
+    //     value: 'croatian',
+    //     flag: '/flags/hr.svg',
+    // },
+    // {
+    //     name: 'PORTUGUESE',
+    //     value: 'portuguese',
+    //     flag: '/flags/pt.svg',
+    // },
+    // {
+    //     name: 'GEORGIAN',
+    //     value: 'georgian',
+    //     flag: '/flags/ge.svg',
+    // },
+    // {
+    //     name: 'ARABIC',
+    //     value: 'arabic',
+    //     flag: '/flags/sa.svg',
+    // },
+    // {
+    //     name: 'CZECH',
+    //     value: 'czech',
+    //     flag: '/flags/cz.svg',
+    // },
+    // {
+    //     name: 'HUNGARIAN',
+    //     value: 'hungarian',
+    //     flag: '/flags/hu.svg',
+    // },
     {
-        name: 'GERMAN',
-        value: 'german',
-        flag: '/flags/de.svg',
-    },
-    {
-        name: 'FRENCH',
-        value: 'french',
-        flag: '/flags/fr.svg',
-    },
-    {
-        name: 'ROMANIAN',
-        value: 'romanian',
-        flag: '/flags/ro.svg',
-    },
-    {
-        name: 'CROATIAN',
-        value: 'croatian',
-        flag: '/flags/hr.svg',
-    },
-    {
-        name: 'PORTUGUESE',
-        value: 'portuguese',
-        flag: '/flags/pt.svg',
-    },
-    {
-        name: 'GEORGIAN',
-        value: 'georgian',
-        flag: '/flags/ge.svg',
-    },
-    {
-        name: 'ARABIC',
-        value: 'arabic',
-        flag: '/flags/sa.svg',
-    },
-    {
-        name: 'CZECH',
-        value: 'czech',
-        flag: '/flags/cz.svg',
-    },
-    {
-        name: 'HUNGARIAN',
-        value: 'hungarian',
-        flag: '/flags/hu.svg',
+        name: 'RUSSIAN',
+        value: 'russian',
+        flag: '/flags/ru.svg',
     },
 ]

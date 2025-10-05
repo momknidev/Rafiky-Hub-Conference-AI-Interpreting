@@ -1,7 +1,7 @@
 "use server";
 
 import { generateToken } from "@/utils/generateToken";
-import { LanguageBotMap, intrepreterUids } from "@/constants/captionUIDs";
+import { LanguageBotMap, intrepreterUids, languageToCode , interpreters} from "@/constants/captionUIDs";
 
 
 export async function StartCaption(channelName, language, hostUid) {
@@ -14,6 +14,8 @@ export async function StartCaption(channelName, language, hostUid) {
     const {token:subToken,uid:subUid} = await generateToken("SUBSCRIBER", channelName,subId);
 
 
+    const targetLanguages = interpreters.filter(lang => language !== lang).map(lang => languageToCode[lang])
+    console.log(targetLanguages, "targetLanguages");
   
     const payload = {
       name: `stt-${Date.now()}`,
@@ -32,7 +34,7 @@ export async function StartCaption(channelName, language, hostUid) {
             {
                 source: langCode,
                 target: [
-                  "en-US"
+                  ...targetLanguages
                 ]
             }
         ]

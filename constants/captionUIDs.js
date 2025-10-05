@@ -44,7 +44,8 @@ export const defaultData = {
 
 export const interpreters = [
     "english",
-    // "german",
+    "russian",
+    "italian",
     // "french",
     // "spanish",
 ]
@@ -83,6 +84,33 @@ export const codeToLanguage = {
     "th-TH": "thai",
 }
 
+
+
+export const languageToCode = {
+    hindi: "hi-IN",
+    german: "de-DE",
+    french: "fr-FR",
+    spanish: "es-ES",
+    italian: "it-IT",
+    portuguese: "pt-PT",
+    russian: "ru-RU",
+    arabic: "ar-EG",
+    bengali: "bn-IN",
+    chinese: "zh-CN",  
+    dutch: "nl-NL",
+    english: "en-US",  
+    filipino: "fil-PH",
+    indonesian: "id-ID",
+    japanese: "ja-JP",
+    kannada: "kn-IN",
+    korean: "ko-KR",
+    malay: "ms-MY",
+    persian: "fa-IR",
+    tamil: "ta-IN",
+    telugu: "te-IN",
+    thai: "th-TH",
+  };
+  
 
 export const intrepreterUids = {
     "hindi": 600001,
