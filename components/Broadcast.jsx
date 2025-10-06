@@ -34,6 +34,94 @@ const loadAgoraSDK = async () => {
   }
 };
 
+
+const voices = {
+  "italian": {
+    "cartesia": [
+      {
+        "name": "Francesca - Elegant Partner",
+        "id": "d609f27f-f1a4-410f-85bb-10037b4fba99",
+        "gender": "female"
+      },
+      {
+        "name": "Matteo - Gentle Narrator",
+        "id": "408daed0-c597-4c27-aae8-fa0497d644bf",
+        "gender": "male"
+      }
+    ],
+    "smallest": [
+      {
+        "name": "felix",
+        "id": "felix",
+        "gender": "male"
+      }
+    ],
+    "deepgram": [
+      {
+        "name": "Asteria",
+        "id": "aura-asteria-en",
+        "gender": "female"
+      }
+    ]
+  },
+  "russian": {
+    "cartesia": [
+      {
+        "name": "Natalya - Soothing Guide",
+        "id": "779673f3-895f-4935-b6b5-b031dc78b319",
+        "gender": "female"
+      },
+      {
+        "name": "Sergei - Expressive Narrator",
+        "id": "da05e96d-ca10-4220-9042-d8acef654fa9",
+        "gender": "male"
+      }
+    ],
+    "smallest": [
+      {
+        "name": "felix",
+        "id": "felix",
+        "gender": "male"
+      }
+    ],
+    "deepgram": [
+      {
+        "name": "Asteria",
+        "id": "aura-asteria-en",
+        "gender": "female"
+      }
+    ]
+  },
+  "english": {
+    "cartesia": [
+      {
+        "name": "Linda - Conversational Guide",
+        "id": "829ccd10-f8b3-43cd-b8a0-4aeaa81f3b30",
+        "gender": "female"
+      },
+      {
+        "name": "Matteo - Gentle Narrator",
+        "id": "a0e99841-438c-4a64-b679-ae501e7d6091",
+        "gender": "male"
+      }
+    ],
+    "smallest": [
+      {
+        "name": "felix",
+        "id": "felix",
+        "gender": "male"
+      }
+    ],
+    "deepgram": [
+      {
+        "name": "Asteria",
+        "id": "aura-asteria-en",
+        "gender": "female"
+      }
+    ]
+  }
+}
+
 const Broadcast = () => {
   const params = useParams();
   const { language } = params;
@@ -47,15 +135,27 @@ const Broadcast = () => {
   const [handoverRequestResponse, setHandoverRequestResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
+
   const websocketRefs = useRef({});
   const router = useRouter();
 
 
+
+
+
   const [ttsService, setTTSService] = useState('cartesia');
+  const [voice, setVoice] = useState({});
   const [apiKey, setApiKey] = useState('');
+
+  useEffect(() => {
+    languages.filter(lang => lang.value !== language).forEach(lang => {
+      setVoice(prev => ({ ...prev, [lang.value]: voices[lang.value][ttsService][0].id }));
+    });
+  }, [ttsService]);
+
   const connectToInterpreter = async (language) => {
     const { url: rtmpUrl } = await getRTMPUrl(channelName, language);
-    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}&ttsService=${ttsService}&apiKey=${apiKey}`);
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}&ttsService=${ttsService}&apiKey=${apiKey}&voice=${voice[language]}`);
     ws.onopen = () => {
       console.log("Interpreter connected");
     };
@@ -1058,6 +1158,25 @@ const Broadcast = () => {
 
                       </SelectContent>
                     </Select>
+
+                    {
+                      languages.filter(lang => lang.value !== language).map((lang) => (
+                        <>
+                          <span className="text-zero-text/70 font-medium block mb-1 mt-2">{lang.value?.slice(0, 1).toUpperCase()}{lang.value?.slice(1).toLowerCase()} Voice</span>
+                          <Select defaultValue={voice[lang.value]} onValueChange={(value) => setVoice(prev => ({ ...prev, [lang.value]: value }))} disabled={isLive}>
+                            <SelectTrigger className='cursor-pointer w-full !bordor-transparent bg-white'>  
+                              <SelectValue placeholder="Select TTS Service" />
+                            </SelectTrigger>
+                            <SelectContent className='bg-white border-none shadow-md'>
+                              {voices[lang.value][ttsService].map((voice) => (
+                                <SelectItem value={voice.id} key={voice.id}>{voice.name} - {voice.gender}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </>
+                      ))
+                    }
+
                   </div>
                   <div className="grid grid-cols-2 gap-6 text-sm font-inter">
                     <div className="space-y-6">

@@ -66,6 +66,8 @@ app.ws('/interpreter', (ws, req) => {
   const rtmpUrl = query.rtmpUrl;
   const ttsService = query.ttsService;
   const apiKey = query.apiKey;
+  const voice = query.voice;
+
   const config = {
     isDisconnected: false,
   }
@@ -78,11 +80,11 @@ app.ws('/interpreter', (ws, req) => {
     //text to speech
     let ttsRef;
     if(ttsService === "deepgram"){
-      ttsRef = textToSpeechDeepgram(rtmpPusher,{voice_id: "aura-asteria-en", apiKey: apiKey,language: languageToCode[language]});
+      ttsRef = textToSpeechDeepgram(rtmpPusher,{voice_id: voice || "aura-asteria-en", apiKey: apiKey,language: languageToCode[language]});
     }else if(ttsService === "smallest"){
-      ttsRef = textToSpeechSmallest(rtmpPusher,{voice_id: "felix", apiKey: apiKey,language: languageToCode[language]});
+      ttsRef = textToSpeechSmallest(rtmpPusher,{voice_id: voice || "felix", apiKey: apiKey,language: languageToCode[language]});
     }else if(ttsService === "cartesia"){
-      ttsRef = textToSpeechCartesia(rtmpPusher,{voice_id: "a0e99841-438c-4a64-b679-ae501e7d6091", apiKey: apiKey,language: languageToCode[language]});
+      ttsRef = textToSpeechCartesia(rtmpPusher,{voice_id: voice || "a0e99841-438c-4a64-b679-ae501e7d6091", apiKey: apiKey,language: languageToCode[language]});
     }
 
   console.log('WebSocket connected', query);
