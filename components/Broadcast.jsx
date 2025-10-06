@@ -44,8 +44,8 @@ const voices = {
         "gender": "Male"
       },
       {
-        "name": "Luca - Everyday Friend",
-        "id": "e019ed7e-6079-4467-bc7f-b599a5dccf6f",
+        "name": "Alessandra - Melodic Guide",
+        "id": "0e21713a-5e9a-428a-bed4-90d410b87f13",
         "gender": "Female"
       }
     ],
