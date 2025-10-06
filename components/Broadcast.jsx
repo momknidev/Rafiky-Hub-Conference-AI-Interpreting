@@ -39,8 +39,8 @@ const voices = {
   "italian": {
     "cartesia": [
       {
-        "name": "Lucio - Empath",
-        "id": "e5923af7-a329-4e9b-b95a-5ace4a083535",
+        "name": "Marco - Friendly Conversationalist",
+        "id": "79693aee-1207-4771-a01e-20c393c89e6f",
         "gender": "Male"
       },
       {
