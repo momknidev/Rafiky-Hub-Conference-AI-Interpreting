@@ -39,28 +39,28 @@ const voices = {
   "italian": {
     "cartesia": [
       {
-        "name": "Francesca - Elegant Partner",
-        "id": "d609f27f-f1a4-410f-85bb-10037b4fba99",
-        "gender": "female"
+        "name": "Lucio - Empath",
+        "id": "e5923af7-a329-4e9b-b95a-5ace4a083535",
+        "gender": "Male"
       },
       {
-        "name": "Matteo - Gentle Narrator",
-        "id": "408daed0-c597-4c27-aae8-fa0497d644bf",
-        "gender": "male"
+        "name": "Luca - Everyday Friend",
+        "id": "e019ed7e-6079-4467-bc7f-b599a5dccf6f",
+        "gender": "Female"
       }
     ],
     "smallest": [
       {
         "name": "felix",
         "id": "felix",
-        "gender": "male"
+        "gender": "Male"
       }
     ],
     "deepgram": [
       {
         "name": "Asteria",
         "id": "aura-asteria-en",
-        "gender": "female"
+        "gender": "Female"
       }
     ]
   },
@@ -69,26 +69,26 @@ const voices = {
       {
         "name": "Natalya - Soothing Guide",
         "id": "779673f3-895f-4935-b6b5-b031dc78b319",
-        "gender": "female"
+        "gender": "Female"
       },
       {
         "name": "Sergei - Expressive Narrator",
         "id": "da05e96d-ca10-4220-9042-d8acef654fa9",
-        "gender": "male"
+        "gender": "Male"
       }
     ],
     "smallest": [
       {
         "name": "felix",
         "id": "felix",
-        "gender": "male"
+        "gender": "Male"
       }
     ],
     "deepgram": [
       {
         "name": "Asteria",
         "id": "aura-asteria-en",
-        "gender": "female"
+        "gender": "Female"
       }
     ]
   },
@@ -97,26 +97,26 @@ const voices = {
       {
         "name": "Linda - Conversational Guide",
         "id": "829ccd10-f8b3-43cd-b8a0-4aeaa81f3b30",
-        "gender": "female"
+        "gender": "Female"
       },
       {
         "name": "Matteo - Gentle Narrator",
         "id": "a0e99841-438c-4a64-b679-ae501e7d6091",
-        "gender": "male"
+        "gender": "Male"
       }
     ],
     "smallest": [
       {
         "name": "felix",
         "id": "felix",
-        "gender": "male"
+        "gender": "Male"
       }
     ],
     "deepgram": [
       {
         "name": "Asteria",
         "id": "aura-asteria-en",
-        "gender": "female"
+        "gender": "Female"
       }
     ]
   }
@@ -1169,7 +1169,7 @@ const Broadcast = () => {
                             </SelectTrigger>
                             <SelectContent className='bg-white border-none shadow-md'>
                               {voices[lang.value][ttsService].map((voice) => (
-                                <SelectItem value={voice.id} key={voice.id}>{voice.name} - {voice.gender}</SelectItem>
+                                <SelectItem value={voice.id} key={voice.id}>{voice.gender}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
