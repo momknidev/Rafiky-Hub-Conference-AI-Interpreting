@@ -217,6 +217,10 @@ const Listner = () => {
   const subTitleContainerRef = useRef(null);
 
 
+  useEffect(() => {
+    window.document.title = `Listener - ${language}`;
+  }, []);
+
   //auto scroll to bottom
   useEffect(() => {
     if (subTitleContainerRef.current) {
@@ -1059,7 +1063,7 @@ const Listner = () => {
                           onClick={handlePlayPauseStream}
                           className={`w-full text-lg lg:text-xl px-8 py-6 lg:py-8 font-bold transition-all duration-300 hover:scale-105 font-inter rounded-xl ${isPlaying
                             ? 'bg-zero-warning text-white hover:bg-zero-warning/90'
-                            : 'bg-zero-green text-zero-text hover:bg-zero-green/90'
+                            : 'bg-zero-green text-white hover:bg-zero-green/90'
                             }`}
                           size="lg"
                           disabled={streamStatus.status === 'reconnecting'}

@@ -17,7 +17,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { flagsMapping, languages } from '@/constants/flagsMapping';
 import { StartCaption, StopCaption, getRTMPUrl } from '@/services/CaptionService';
 import { usePrototype } from '@/hooks/usePrototype';
-import { LanguageBotMap, codeToLanguage, defaultData, interpreters } from '@/constants/captionUIDs';
+import { LanguageBotMap, codeToLanguage, defaultData, interpreters, ttsProviders } from '@/constants/captionUIDs';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './ui/select';
 import { Input } from './ui/input';
 
@@ -124,7 +124,8 @@ const voices = {
 
 const Broadcast = () => {
   const params = useParams();
-  const { language } = params;
+  let { language: languageParam } = params;
+  languageParam = languageParam == "translate" ? "english" : languageParam;
   // Loading state for async components
   const [isSDKLoading, setIsSDKLoading] = useState(true);
   const [sdkError, setSDKError] = useState(null);
@@ -135,27 +136,31 @@ const Broadcast = () => {
   const [handoverRequestResponse, setHandoverRequestResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [firstLoad, setFirstLoad] = useState(true);
+  const [language, setParamsLanguage] = useState(languageParam);
+  const hostUidRef = useRef(null);
+
 
   const websocketRefs = useRef({});
   const router = useRouter();
+  const langRef = useRef(language);
 
 
+
+  useEffect(() => {
+    window.document.title = `Broadcaster - ${language}`;
+  }, [language]);
 
 
 
   const [ttsService, setTTSService] = useState('cartesia');
-  const [voice, setVoice] = useState({});
+  const [voiceGender, setVoiceGender] = useState('Male');
   const [apiKey, setApiKey] = useState('');
-
-  useEffect(() => {
-    languages.filter(lang => lang.value !== language).forEach(lang => {
-      setVoice(prev => ({ ...prev, [lang.value]: voices[lang.value][ttsService][0].id }));
-    });
-  }, [ttsService]);
 
   const connectToInterpreter = async (language) => {
     const { url: rtmpUrl } = await getRTMPUrl(channelName, language);
-    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}&ttsService=${ttsService}&apiKey=${apiKey}&voice=${voice[language]}`);
+    const voice = voices[language][ttsService]?.find(voice => voice.gender.toLowerCase() === voiceGender.toLowerCase());
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}&ttsService=${ttsService}&apiKey=${apiKey}&voice=${voice?.id}`);
+
     ws.onopen = () => {
       console.log("Interpreter connected");
     };
@@ -216,6 +221,7 @@ const Broadcast = () => {
 
   useEffect(() => {
     setLanguage(language);
+    langRef.current = language;
   }, [language]);
 
   useEffect(() => {
@@ -430,7 +436,8 @@ const Broadcast = () => {
 
     agoraClient.on("stream-message", (uid, data) => {
       try {
-        const languageDetails = LanguageBotMap[language];
+        console.log(langRef.current, "stream-message");
+        const languageDetails = LanguageBotMap[langRef.current];
         if (languageDetails) {
           const { subId, pubId, langCode } = languageDetails;
           if (String(uid) === String(pubId)) {
@@ -559,6 +566,7 @@ const Broadcast = () => {
         await client.publish(localAudioTrack);
         const agentRes = await StartCaption(CHANNEL_NAME, language, uid);
         agentSttRef.current = agentRes.agentId;
+        hostUidRef.current = uid;
       };
 
       // Race between connection and timeout
@@ -865,6 +873,40 @@ const Broadcast = () => {
     }
   };
 
+
+
+  const handleSwitchLanguage = async (language) => {
+    setLoading(true);
+    await StopCaption(agentSttRef.current);
+    interpreters.forEach(language => {
+      websocketRefs.current[language]?.close();
+    });
+
+
+
+    //start the stream
+    const agentRes = await StartCaption(channelName, language, hostUidRef.current);
+    agentSttRef.current = agentRes.agentId;
+    console.log(agentRes, "agentResagentResagentRes",hostUidRef.current);
+
+    interpreters.filter(lang => lang !== language).forEach(language => {
+      connectToInterpreter(language);
+    });
+
+    setLoading(false);
+    toast.success("🎙️ Source language switched successfully!", {
+      duration: 4000
+    });
+  }
+
+  const handleSourceLanguageChange = (language) => {
+    setParamsLanguage(language);
+
+    if (isLiveRef.current) {
+      handleSwitchLanguage(language);
+    }
+  };
+
   const handleReconnect = async () => {
     toast.info("Attempting to reconnect microphone...");
     await initializeMicrophone();
@@ -1027,7 +1069,14 @@ const Broadcast = () => {
 
                 <div>
                   <span className="text-zero-text/70 font-medium block mb-1">Source Language</span>
-                  <Select
+                  <div className="flex gap-2 items-center mb-4">
+                    {
+                      languages.map((lang) => (
+                        <Button key={lang.value} variant="outline" className={`bg-white flex-1 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md border-none text-zero-text hover:bg-zero-green hover:text-white ${lang.value === language ? 'bg-zero-green text-white' : ''}`} onClick={() => handleSourceLanguageChange(lang.value)}>{lang.name}</Button>
+                      ))
+                    }
+                  </div>
+                  {/* <Select
                     defaultValue={language}
                     onValueChange={(value) => router.push(`/booth/${value}`)}
                   >
@@ -1041,7 +1090,7 @@ const Broadcast = () => {
                         ))
                       }
                     </SelectContent>
-                  </Select>
+                  </Select> */}
                 </div>
 
                 <div className="space-y-10">
@@ -1147,36 +1196,22 @@ const Broadcast = () => {
                 <div className="space-y-8">
                   <div className="p-4 bg-gray-50 rounded-2xl">
                     <span className="text-zero-text/70 font-medium block mb-1">TTS Service</span>
-                    <Select defaultValue="cartesia" onValueChange={(value) => setTTSService(value)} disabled={isLive}>
-                      <SelectTrigger className='cursor-pointer w-full !bordor-transparent bg-white'>
-                        <SelectValue placeholder="Select TTS Service" />
-                      </SelectTrigger>
-                      <SelectContent className='bg-white border-none shadow-md'>
-                        <SelectItem value="cartesia">Primary </SelectItem>
-                        <SelectItem value="deepgram">Backup 1</SelectItem>
-                        <SelectItem value="smallest">Backup 2</SelectItem>
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      {
+                        ttsProviders.map((service) => (
+                          <Button key={service.value} variant="outline" disabled={isLive} className={`bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md border-none text-zero-text hover:bg-zero-green hover:text-white ${ttsService === service.value ? 'bg-zero-green text-white' : ''}`} onClick={() => setTTSService(service.value)}>{service.name}</Button>
+                        ))
+                      }
+                    </div>
 
-                      </SelectContent>
-                    </Select>
-
-                    {
-                      languages.filter(lang => lang.value !== language).map((lang) => (
-                        <>
-                          <span className="text-zero-text/70 font-medium block mb-1 mt-2">{lang.value?.slice(0, 1).toUpperCase()}{lang.value?.slice(1).toLowerCase()} Voice</span>
-                          <Select defaultValue={voice[lang.value]} onValueChange={(value) => setVoice(prev => ({ ...prev, [lang.value]: value }))} disabled={isLive}>
-                            <SelectTrigger className='cursor-pointer w-full !bordor-transparent bg-white'>  
-                              <SelectValue placeholder="Select TTS Service" />
-                            </SelectTrigger>
-                            <SelectContent className='bg-white border-none shadow-md'>
-                              {voices[lang.value][ttsService].map((voice) => (
-                                <SelectItem value={voice.id} key={voice.id}>{voice.gender}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </>
-                      ))
-                    }
-
+                    <div>
+                      <span className="text-zero-text/70 font-medium block mb-1">Voice</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        {["Male", "Female"].map((gender) => (
+                          <Button key={gender} variant="outline" disabled={isLive} className={`bg-gray-50  disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md border-none text-zero-text hover:bg-zero-green hover:text-white ${voiceGender === gender ? 'bg-zero-green text-white' : ''}`} onClick={() => setVoiceGender(gender)}>{gender}</Button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-6 text-sm font-inter">
                     <div className="space-y-6">

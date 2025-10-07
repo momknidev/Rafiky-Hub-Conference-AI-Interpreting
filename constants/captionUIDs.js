@@ -141,3 +141,20 @@ export const intrepreterUids = {
     "turkish": 600026,
     "vietnamese": 600027,
 }
+
+
+
+export const ttsProviders = [
+    {
+        name: "Primary",
+        value: "cartesia"
+    },
+    {
+        name: "Backup 1",
+        value: "deepgram"
+    },
+    {
+        name: "Backup 2",
+        value: "smallest"
+    }
+]
