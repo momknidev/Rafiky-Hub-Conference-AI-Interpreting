@@ -669,7 +669,7 @@ const Broadcast = () => {
 
       toast.info("Broadcast stopped. Thank you for your interpretation!", { duration: 4000 });
 
-      interpreters.filter(lang => lang !== language).forEach(language => {
+      interpreters.forEach(language => {
         websocketRefs.current[language]?.close();
       });
 
