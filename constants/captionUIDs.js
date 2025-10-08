@@ -157,8 +157,12 @@ export const ttsProviders = [
         name: "Backup 1",
         value: "elevenlabs"
     },
+    // {
+    //     name: "Backup 2",
+    //     value: "smallest"
+    // }
     {
         name: "Backup 2",
-        value: "smallest"
-    }
+        value: "deepgram"
+    },
 ]
