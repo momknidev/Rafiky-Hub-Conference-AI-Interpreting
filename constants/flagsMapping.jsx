@@ -19,11 +19,11 @@ export const languages = [
         value: 'italian',
         flag: '/flags/it.svg',
     },
-    {
-        name: 'ENGLISH',
-        value: 'english',
-        flag: '/flags/gb-eng.svg',
-    },
+    // {
+    //     name: 'ENGLISH',
+    //     value: 'english',
+    //     flag: '/flags/gb-eng.svg',
+    // },
     // {
     //     name: 'GERMAN',
     //     value: 'german',
@@ -69,9 +69,9 @@ export const languages = [
     //     value: 'hungarian',
     //     flag: '/flags/hu.svg',
     // },
-//     {
-//         name: 'RUSSIAN',
-//         value: 'russian',
-//         flag: '/flags/ru.svg',
-//     },
+    {
+        name: 'RUSSIAN',
+        value: 'russian',
+        flag: '/flags/ru.svg',
+    },
 ]
