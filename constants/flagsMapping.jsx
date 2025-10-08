@@ -69,9 +69,9 @@ export const languages = [
     //     value: 'hungarian',
     //     flag: '/flags/hu.svg',
     // },
-    {
-        name: 'RUSSIAN',
-        value: 'russian',
-        flag: '/flags/ru.svg',
-    },
+//     {
+//         name: 'RUSSIAN',
+//         value: 'russian',
+//         flag: '/flags/ru.svg',
+//     },
 ]

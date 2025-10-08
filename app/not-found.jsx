@@ -10,7 +10,7 @@ const NotFound = () => {
       <header className="bg-gray-200 text-white p-4">
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-playfair font-bold">
-            <img src="/images/main-logo.png" alt="logo" className="w-[12rem] object-contain" />
+            <img src="/images/lingo-you-logo.png" alt="logo" className="w-[12rem] object-contain" />
           </h1>
         </div>
       </header>

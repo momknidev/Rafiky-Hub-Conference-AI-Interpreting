@@ -1016,7 +1016,7 @@ const Broadcast = () => {
         <header className="bg-gray-200 text-white p-6 sticky top-0 z-50 backdrop-blur-xl border-b border-white/10">
           <div className="container mx-auto flex justify-between items-center">
             <div className="flex items-center gap-6">
-              <img src="/images/main-logo.png" alt="logo" className="w-[12rem] object-contain" />
+              <img src="/images/lingo-you-logo.png" alt="logo" className="w-[12rem] object-contain" />
             </div>
 
             <div className="flex items-center gap-6">
