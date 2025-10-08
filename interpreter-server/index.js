@@ -36,7 +36,7 @@ import fs from 'fs';
 import waveFile from 'wavefile';
 import config from 'dotenv';
 config.config({path: '.env.local'});
-import { textToSpeechDeepgram, textToSpeechSmallest, textToSpeechCartesia } from './services/ttsService.js';
+import { textToSpeechDeepgram, textToSpeechSmallest, textToSpeechCartesia, textToSpeechElevenLabsWS, textToSpeechPlayHTWS } from './services/ttsService.js';
 import WebSocket from 'ws';
 const app = express();
 expressWs(app);
@@ -85,6 +85,10 @@ app.ws('/interpreter', (ws, req) => {
       ttsRef = textToSpeechSmallest(rtmpPusher,{voice_id: voice || "felix", apiKey: apiKey,language: languageToCode[language]});
     }else if(ttsService === "cartesia"){
       ttsRef = textToSpeechCartesia(rtmpPusher,{voice_id: voice || "a0e99841-438c-4a64-b679-ae501e7d6091", apiKey: apiKey,language: languageToCode[language]});
+    }else if(ttsService === "elevenlabs"){
+      ttsRef = textToSpeechElevenLabsWS(rtmpPusher,{voice_id: voice || "JBFqnCBsd6RMkjVDRZzb", apiKey: apiKey,language: languageToCode[language]});
+    }else if(ttsService === "playht"){
+      ttsRef = textToSpeechPlayHTWS(rtmpPusher,{voice_id: voice || "s3://voice-cloning-zero-shot/775ae416-49bb-4fb6-bd45-740f205d20a1/jennifersaad/manifest.json", apiKey: apiKey,language: languageToCode[language]});
     }
 
   console.log('WebSocket connected', query);
@@ -94,7 +98,7 @@ app.ws('/interpreter', (ws, req) => {
     if(type === "translation"){
       const text = data.text;
       const language = data.language;
-      console.log('translation: ', text, language);
+      console.log('translation: ', text, language, ttsRef.ws.readyState);
       if(ttsRef.ws.readyState === WebSocket.OPEN){
         // ttsRef.send(JSON.stringify({ 'type': 'Speak', 'text': text }));
         // ttsRef.send(JSON.stringify({ 'type': 'Flush' }));

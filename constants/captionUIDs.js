@@ -44,7 +44,7 @@ export const defaultData = {
 
 export const interpreters = [
     "english",
-    "russian",
+    // "russian",
     "italian",
     // "french",
     // "spanish",
@@ -149,9 +149,13 @@ export const ttsProviders = [
         name: "Primary",
         value: "cartesia"
     },
+    // {
+    //     name: "Backup 1",
+    //     value: "deepgram"
+    // },
     {
         name: "Backup 1",
-        value: "deepgram"
+        value: "elevenlabs"
     },
     {
         name: "Backup 2",

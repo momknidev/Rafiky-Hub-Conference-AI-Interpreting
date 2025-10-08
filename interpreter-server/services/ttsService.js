@@ -247,3 +247,211 @@ export const textToSpeechCartesia = (rtmpPusher, cfg) => {
     close: () => { try { ws.close(); } catch {} },
   };
 };
+
+
+
+
+
+
+export const textToSpeechElevenLabsWS = (rtmpPusher, cfg = {}) => {
+  const apiKey = (cfg.apiKey || process.env.ELEVENLABS_API_KEY || '').trim();
+  if (!apiKey) throw new Error('Missing ELEVENLABS_API_KEY');
+
+  const voiceId     = cfg.voice_id   || 'JBFqnCBsd6RMkjVDRZzb';
+  const modelId     = cfg.model_id   || 'eleven_turbo_v2_5'; // WS supported; avoid eleven_v3 for WS
+  const sampleRate  = cfg.sample_rate|| 44100;
+  const language    = cfg.language   || 'en';           // e.g. 'en'
+  const outputFmt   = cfg.output_format || 'pcm_44100';
+  const autoMode    = cfg.auto_mode ?? true;                 // lower latency for full sentences
+  const baseUrl     = cfg.baseUrl || 'wss://api.elevenlabs.io';
+
+  const qs = new URLSearchParams({
+    ...(modelId && { model_id: modelId }),
+    ...(language && { language_code: language }),
+    output_format: outputFmt,
+    auto_mode: String(autoMode),
+  });
+
+  const url = `${baseUrl}/v1/text-to-speech/${voiceId}/stream-input?${qs.toString()}`;
+  const ws  = new WebSocket(url, {
+    headers: { 'xi-api-key': apiKey },
+  });
+
+  let open = false;
+  let pingTimer = null;
+
+  ws.on('open', () => {
+    console.log('ElevenLabs TTS: Connected');
+    open = true;
+
+    ws.send(JSON.stringify({
+      text: " ",
+      voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0, use_speaker_boost: true },
+      try_trigger_generation: false
+    }));
+
+    pingTimer = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ text: " " }));
+      }
+    }, 2000);
+  });
+
+  ws.on('message', (data, isBinary) => {
+    try {
+      const msg = JSON.parse(data.toString());
+      if (msg?.audio) {
+        const pcmBuf = Buffer.from(msg.audio, 'base64'); // pcm S16LE @ sampleRate
+        rtmpPusher.pushChunk(pcmBuf);
+      }
+    } catch (e) {
+      console.log('error', e);
+      // Tolerate non-JSON (if they ever send binary or heartbeats)
+    }
+  });
+
+  ws.on('error', (err) => {
+    console.error('ElevenLabs WS error:', err?.message || err);
+    if (pingTimer) clearInterval(pingTimer);
+  });
+  ws.on('close', (code, reason) => {
+    console.log('ElevenLabs TTS: Disconnected', code, reason.toString());
+    open = false;
+    if (pingTimer) clearInterval(pingTimer);
+  });
+
+  const speak = (text, opts = {}) => {
+    if (ws.readyState !== WebSocket.OPEN) return;
+    if (typeof text !== 'string') return;
+    
+    ws.send(JSON.stringify({ text, try_trigger_generation: true }));
+  };
+
+  const flushBoundary = () => {
+    if (!open || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({ text: '' }));
+  };
+
+  const close = () => {
+    try { if (pingTimer) clearInterval(pingTimer); ws.close(); } catch {}
+  };
+
+  return { ws, sendText: speak, flushBoundary, close };
+};
+
+
+
+
+
+
+
+export async function textToSpeechPlayHTWS(rtmpPusher, cfg = {}) {
+  const apiKey = (cfg.apiKey || process.env.PLAYHT_API_KEY || '').trim();
+  const userId = (cfg.userId || process.env.PLAYHT_USER_ID || '').trim();
+  if (!apiKey || !userId) throw new Error('Missing PlayHT credentials');
+
+  const model = cfg.model || 'Play3.0-mini'; // supports WS per docs
+  const voice = cfg.voice_id;                   // REQUIRED by PlayHT
+  if (!voice) throw new Error('cfg.voice is required (PlayHT voice id/url)');
+
+  const outputFormat = (cfg.outputFormat || 'pcm').toLowerCase(); // 'mp3' | 'wav' | 'pcm'
+  const sampleRate   = cfg.sampleRate || 44100;
+
+  // 1) Get a short-lived WS URL for the desired engine
+  const authRes = await fetch('https://api.play.ht/api/v4/websocket-auth', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'X-User-Id': userId,
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!authRes.ok) {
+    const t = await authRes.text().catch(()=>'');
+    throw new Error(`PlayHT websocket-auth failed: ${authRes.status} ${authRes.statusText} ${t}`);
+  }
+  const { websocket_urls, expires_at } = await authRes.json();
+  const wsUrl = websocket_urls?.[model];
+  if (!wsUrl) throw new Error(`No websocket URL for model ${model}; got keys: ${Object.keys(websocket_urls || {})}`);
+
+  // 2) Connect
+  const ws = new WebSocket(wsUrl);
+  let isOpen = false;
+  let keepTimer = null;
+
+  ws.on('open', () => {
+    isOpen = true;
+    console.log('PlayHT TTS: Connected to', model, 'expires at', expires_at);
+    // optional keepalive (Play.ht will close idle sockets)
+    const keep = Math.max(10, (cfg.keepaliveSec ?? 45));
+    keepTimer = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        // no-op ping via text frame
+        ws.send(JSON.stringify({ text: ' ' }));
+      }
+    }, keep * 1000);
+  });
+
+  ws.on('message', (data, isBinary) => {
+    try {
+      if (isBinary) {
+        // Binary frames are the audio bytes (format you requested)
+        rtmpPusher.pushChunk(Buffer.from(data));
+        return;
+      }
+      // Text frames are control messages: "start" / "end" / errors
+      const msg = JSON.parse(data.toString());
+      if (msg?.type === 'start') {
+        // request_id etc. available here if you want to correlate
+        // console.log('PlayHT start:', msg.request_id);
+      } else if (msg?.type === 'end') {
+        // end of one synthesis
+        // console.log('PlayHT end:', msg.request_id);
+      } else if (msg?.error) {
+        console.error('PlayHT WS error message:', msg.error);
+      }
+    } catch {/* ignore parse errors */}
+  });
+
+  ws.on('close', (code, reason) => {
+    if (keepTimer) clearInterval(keepTimer);
+    isOpen = false;
+    console.log('PlayHT TTS: Disconnected', code, reason?.toString());
+  });
+
+  ws.on('error', (err) => {
+    if (keepTimer) clearInterval(keepTimer);
+    console.error('PlayHT WS error:', err?.message || err);
+  });
+
+  // 3) Send one utterance
+  const sendText = (text, opts = {}) => {
+    if (!text || !text.trim()) return;
+    if (!isOpen || ws.readyState !== WebSocket.OPEN) return;
+
+    // PlayHT accepts similar options to their HTTP streaming API
+    // Common fields: text, voice, output_format, quality, speed, temperature
+    const payload = {
+      text,
+      voice,
+      output_format: outputFormat,   // "mp3" (default), or "wav", or "pcm"
+      // If you’re requesting raw PCM or WAV, also pass sample rate:
+      ...(outputFormat !== 'mp3' ? { sample_rate: sampleRate } : {}),
+      // Tuning knobs (optional):
+      ...(opts.quality ? { quality: opts.quality } : {}), // "draft" | "standard" | "premium"
+      ...(opts.speed   ? { speed: opts.speed }       : {}), // 0.5 .. 2.0
+      ...(opts.temperature !== undefined ? { temperature: opts.temperature } : {}),
+    };
+    ws.send(JSON.stringify(payload));
+  };
+
+  const flushBoundary = () => {
+    // PlayHT WS is request/response; you typically just send new messages.
+    // If you want to indicate “end of current segment”, send empty text:
+    if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ text: '' }));
+  };
+
+  const close = () => { try { if (keepTimer) clearInterval(keepTimer); ws.close(); } catch {} };
+
+  return { ws, sendText, flushBoundary, close };
+}

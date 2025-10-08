@@ -62,6 +62,18 @@ const voices = {
         "id": "aura-asteria-en",
         "gender": "Female"
       }
+    ],
+    "elevenlabs": [
+      {
+        "name": "Daniel",
+        "id": "onwK4e9ZLuTAKqWW03F9",
+        "gender": "Male"
+      },
+      {
+        "name": "Lily",
+        "id": "pFZP5JQG7iQjIQuC4Bku",
+        "gender": "Female"
+      }
     ]
   },
   "russian": {
@@ -90,6 +102,18 @@ const voices = {
         "id": "aura-asteria-en",
         "gender": "Female"
       }
+    ],
+    "elevenlabs": [
+      {
+        "name": "Daniel",
+        "id": "onwK4e9ZLuTAKqWW03F9",
+        "gender": "Male"
+      },
+      {
+        "name": "Lily",
+        "id": "pFZP5JQG7iQjIQuC4Bku",
+        "gender": "Female"
+      }
     ]
   },
   "english": {
@@ -116,6 +140,18 @@ const voices = {
       {
         "name": "Asteria",
         "id": "aura-asteria-en",
+        "gender": "Female"
+      }
+    ],
+    "elevenlabs": [
+      {
+        "name": "Daniel",
+        "id": "onwK4e9ZLuTAKqWW03F9",
+        "gender": "Male"
+      },
+      {
+        "name": "Lily",
+        "id": "pFZP5JQG7iQjIQuC4Bku",
         "gender": "Female"
       }
     ]
