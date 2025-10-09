@@ -116,12 +116,12 @@ const voices = {
     "elevenlabs": [
       {
         "name": "Daniel",
-        "id": "onwK4e9ZLuTAKqWW03F9",
+        "id": "kuR1PV7xDOsP38QMSEvD",
         "gender": "Male"
       },
       {
         "name": "Lily",
-        "id": "pFZP5JQG7iQjIQuC4Bku",
+        "id": "ycbyWsnf4hqZgdpKHqiU",
         "gender": "Female"
       }
     ]
@@ -161,12 +161,12 @@ const voices = {
     "elevenlabs": [
       {
         "name": "Daniel",
-        "id": "onwK4e9ZLuTAKqWW03F9",
+        "id": "zNsotODqUhvbJ5wMG7Ei",
         "gender": "Male"
       },
       {
         "name": "Lily",
-        "id": "pFZP5JQG7iQjIQuC4Bku",
+        "id": "KoVIHoyLDrQyd4pGalbs",
         "gender": "Female"
       }
     ]
