@@ -61,6 +61,11 @@ const voices = {
         "name": "Asteria",
         "id": "aura-asteria-en",
         "gender": "Female"
+      },
+      {
+        "name": "Orpheus",
+        "id": "aura-orpheus-en",
+        "gender": "Male"
       }
     ],
     "elevenlabs": [
@@ -101,6 +106,11 @@ const voices = {
         "name": "Asteria",
         "id": "aura-asteria-en",
         "gender": "Female"
+      },
+      {
+        "name": "Orpheus",
+        "id": "aura-orpheus-en",
+        "gender": "Male"
       }
     ],
     "elevenlabs": [
@@ -141,6 +151,11 @@ const voices = {
         "name": "Asteria",
         "id": "aura-asteria-en",
         "gender": "Female"
+      },
+      {
+        "name": "Orpheus",
+        "id": "aura-orpheus-en",
+        "gender": "Male"
       }
     ],
     "elevenlabs": [
