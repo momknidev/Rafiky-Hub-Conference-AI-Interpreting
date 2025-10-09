@@ -183,9 +183,9 @@ export const textToSpeechCartesia = (rtmpPusher, cfg) => {
 
   ws.on('open', () => {
     console.log('Cartesia TTS: Connected');
-    pingInterval = setInterval(() => {
-      flushBoundary();
-    }, 5000);
+    // pingInterval = setInterval(() => {
+    //   flushBoundary();
+    // }, 5000);
   });
 
   ws.on('message', (data) => {
