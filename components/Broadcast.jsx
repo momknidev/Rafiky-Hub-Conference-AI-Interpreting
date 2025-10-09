@@ -203,7 +203,7 @@ const Broadcast = () => {
 
 
 
-  const [ttsService, setTTSService] = useState('cartesia');
+  const [ttsService, setTTSService] = useState('elevenlabs');
   const [voiceGender, setVoiceGender] = useState('Male');
   const [apiKey, setApiKey] = useState('');
 
