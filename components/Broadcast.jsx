@@ -116,7 +116,7 @@ const voices = {
     "elevenlabs": [
       {
         "name": "Daniel",
-        "id": "SOYHLrjzK2X1ezoPC6cr",
+        "id": "VwRq6NLQB8AqRusa9F9t",
         "gender": "Male"
       },
       {
