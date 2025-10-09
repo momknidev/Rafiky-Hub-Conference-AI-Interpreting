@@ -183,6 +183,9 @@ export const textToSpeechCartesia = (rtmpPusher, cfg) => {
 
   ws.on('open', () => {
     console.log('Cartesia TTS: Connected');
+    pingInterval = setInterval(() => {
+      flushBoundary();
+    }, 5000);
   });
 
   ws.on('message', (data) => {
@@ -286,7 +289,7 @@ export const textToSpeechElevenLabsWS = (rtmpPusher, cfg = {}) => {
 
     ws.send(JSON.stringify({
       text: " ",
-      voice_settings: { stability: 0.5, similarity_boost: 0.8, style: 0, use_speaker_boost: true, speed: 1.2 },
+      voice_settings: { stability: 0.8, similarity_boost: 0.1, style: 0, use_speaker_boost: false, speed: 1.1 },
       try_trigger_generation: false
     }));
 

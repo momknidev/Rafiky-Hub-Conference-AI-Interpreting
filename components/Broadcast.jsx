@@ -116,7 +116,7 @@ const voices = {
     "elevenlabs": [
       {
         "name": "Daniel",
-        "id": "SOYHLrjzK2X1ezoPC6cr",
+        "id": "bIHbv24MWmeRgasZH58o",
         "gender": "Male"
       },
       {
@@ -203,8 +203,8 @@ const Broadcast = () => {
 
 
 
-  const [ttsService, setTTSService] = useState('elevenlabs');
-  const [voiceGender, setVoiceGender] = useState('Male');
+  const [ttsService, setTTSService] = useState('cartesia');
+  const [voiceGender, setVoiceGender] = useState('Female');
   const [apiKey, setApiKey] = useState('');
 
   const connectToInterpreter = async (language) => {

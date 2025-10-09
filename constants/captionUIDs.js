@@ -147,11 +147,11 @@ export const intrepreterUids = {
 export const ttsProviders = [
     {
         name: "Primary",
-        value: "elevenlabs"
-    },
-     {
-        name: "Backup 1",
         value: "cartesia"
+    },
+    {
+        name: "Backup 1",
+        value: "elevenlabs"
     },
     // {
     //     name: "Backup 2",
