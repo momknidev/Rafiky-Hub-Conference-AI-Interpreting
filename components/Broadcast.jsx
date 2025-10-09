@@ -115,13 +115,13 @@ const voices = {
     ],
     "elevenlabs": [
       {
-        "name": "Daniel",
-        "id": "kuR1PV7xDOsP38QMSEvD",
+        "name": "Pepper",
+        "id": "BHMDqCKgYeHHupc0I8VD",
         "gender": "Male"
       },
       {
-        "name": "Lily",
-        "id": "ycbyWsnf4hqZgdpKHqiU",
+        "name": "Victoria",
+        "id": "FZGeNF7bE3syeQOynDKC",
         "gender": "Female"
       }
     ]
