@@ -212,6 +212,7 @@ const Listner = () => {
   const [subtitleOpen, setSubtitleOpen] = useState(true);
   const { channelName, setLanguage } = useChannel();
   const [subTitle, setSubtitles] = useState([]);
+  const [transcript, setTranscript] = useState({});
   const subTitleRef = useRef(uuidv4());
   const isPlayingRef = useRef(false);
   const subTitleContainerRef = useRef(null);
@@ -556,7 +557,13 @@ const Listner = () => {
         const bytes = new Uint8Array(data);
         const Text = protypeRef.current.lookupType("Agora.SpeechToText.Text");
         const msg = Text.decode(bytes);
-
+        if(msg.dataType === "transcribe"){
+          if(msg?.words[0]?.isFinal){
+            console.log(msg?.words[0]?.text, "stream-message");
+            subTitleRef.current = uuidv4();
+            setTranscript(prev => ({ ...prev, [subTitleRef.current]: msg?.words[0]?.text }));
+          }
+        }
         if (msg.dataType === "translate") {
           if (msg?.trans[0]?.isFinal) {
             const lang = codeToLanguage[msg?.trans[0]?.lang];
@@ -564,7 +571,7 @@ const Listner = () => {
               console.log(msg?.trans[0]?.texts[0], msg?.trans[0]?.lang, "stream-message");
               console.log(language, "language");
               console.log(lang, "lang");
-              subTitleRef.current = uuidv4();
+              // subTitleRef.current = uuidv4();
               setSubtitles(prev => [...prev, { uuid: subTitleRef.current, text: msg?.trans[0]?.texts[0], isFinal: msg?.trans[0]?.isFinal }]);
             }
           }
@@ -933,7 +940,7 @@ const Listner = () => {
                   item.text &&
                   <div key={item.uuid} className="flex items-center gap-3">
                     <img src={flagsMapping[language]} alt={language} className="w-6 h-6" />
-                    <h2 className="text-sm text-zero-text/70 font-inter font-light">{item.text}</h2>
+                    <h2 className="text-sm text-zero-text/70 font-inter font-light">{item.text} - {transcript[item.uuid]}</h2>
                   </div>
                 }
 
