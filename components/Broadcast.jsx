@@ -170,7 +170,142 @@ const voices = {
         "gender": "Female"
       }
     ]
-  }
+  },
+  "french": {
+    "cartesia": [
+      {
+        "name": "Natalya - Soothing Guide",
+        "id": "779673f3-895f-4935-b6b5-b031dc78b319",
+        "gender": "Female"
+      },
+      {
+        "name": "Sergei - Expressive Narrator",
+        "id": "da05e96d-ca10-4220-9042-d8acef654fa9",
+        "gender": "Male"
+      }
+    ],
+    "smallest": [
+      {
+        "name": "felix",
+        "id": "felix",
+        "gender": "Male"
+      }
+    ],
+    "deepgram": [
+      {
+        "name": "Asteria",
+        "id": "aura-asteria-en",
+        "gender": "Female"
+      },
+      {
+        "name": "Orpheus",
+        "id": "aura-orpheus-en",
+        "gender": "Male"
+      }
+    ],
+    "elevenlabs": [
+      {
+        "name": "Daniel",
+        "id": "bIHbv24MWmeRgasZH58o",
+        "gender": "Male"
+      },
+      {
+        "name": "Lily",
+        "id": "Xb7hH8MSUJpSbSDYk0k2",
+        "gender": "Female"
+      }
+    ]
+  },
+  "spanish": {
+    "cartesia": [
+      {
+        "name": "Natalya - Soothing Guide",
+        "id": "779673f3-895f-4935-b6b5-b031dc78b319",
+        "gender": "Female"
+      },
+      {
+        "name": "Sergei - Expressive Narrator",
+        "id": "da05e96d-ca10-4220-9042-d8acef654fa9",
+        "gender": "Male"
+      }
+    ],
+    "smallest": [
+      {
+        "name": "felix",
+        "id": "felix",
+        "gender": "Male"
+      }
+    ],
+    "deepgram": [
+      {
+        "name": "Asteria",
+        "id": "aura-asteria-en",
+        "gender": "Female"
+      },
+      {
+        "name": "Orpheus",
+        "id": "aura-orpheus-en",
+        "gender": "Male"
+      }
+    ],
+    "elevenlabs": [
+      {
+        "name": "Daniel",
+        "id": "bIHbv24MWmeRgasZH58o",
+        "gender": "Male"
+      },
+      {
+        "name": "Lily",
+        "id": "Xb7hH8MSUJpSbSDYk0k2",
+        "gender": "Female"
+      }
+    ]
+  },
+  "german": {
+    "cartesia": [
+      {
+        "name": "Natalya - Soothing Guide",
+        "id": "779673f3-895f-4935-b6b5-b031dc78b319",
+        "gender": "Female"
+      },
+      {
+        "name": "Sergei - Expressive Narrator",
+        "id": "da05e96d-ca10-4220-9042-d8acef654fa9",
+        "gender": "Male"
+      }
+    ],
+    "smallest": [
+      {
+        "name": "felix",
+        "id": "felix",
+        "gender": "Male"
+      }
+    ],
+    "deepgram": [
+      {
+        "name": "Asteria",
+        "id": "aura-asteria-en",
+        "gender": "Female"
+      },
+      {
+        "name": "Orpheus",
+        "id": "aura-orpheus-en",
+        "gender": "Male"
+      }
+    ],
+    "elevenlabs": [
+      {
+        "name": "Daniel",
+        "id": "bIHbv24MWmeRgasZH58o",
+        "gender": "Male"
+      },
+      {
+        "name": "Lily",
+        "id": "Xb7hH8MSUJpSbSDYk0k2",
+        "gender": "Female"
+      }
+    ]
+  },
 }
 
 const Broadcast = () => {

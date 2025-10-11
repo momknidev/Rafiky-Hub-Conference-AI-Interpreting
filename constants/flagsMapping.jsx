@@ -24,16 +24,21 @@ export const languages = [
         value: 'english',
         flag: '/flags/gb-eng.svg',
     },
-    // {
-    //     name: 'GERMAN',
-    //     value: 'german',
-    //     flag: '/flags/de.svg',
-    // },
-    // {
-    //     name: 'FRENCH',
-    //     value: 'french',
-    //     flag: '/flags/fr.svg',
-    // },
+    {
+        name: 'GERMAN',
+        value: 'german',
+        flag: '/flags/de.svg',
+    },
+    {
+        name: 'FRENCH',
+        value: 'french',
+        flag: '/flags/fr.svg',
+    },
+    {
+        name: 'SPANISH',
+        value: 'spanish',
+        flag: '/flags/es.svg',
+    },
     // {
     //     name: 'ROMANIAN',
     //     value: 'romanian',
