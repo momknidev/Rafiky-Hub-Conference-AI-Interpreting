@@ -68,6 +68,7 @@ app.ws('/interpreter', (ws, req) => {
   const apiKey = query.apiKey;
   const voice = query.voice;
   const instructions = query.instructions || "You are a helpful assistant.";
+  const sourceLanguage = query.sourceLanguage;
 
   const config = {
     isDisconnected: false,
@@ -91,7 +92,7 @@ app.ws('/interpreter', (ws, req) => {
     }else if(ttsService === "playht"){
       ttsRef = textToSpeechPlayHTWS(rtmpPusher,{voice_id: voice || "s3://voice-cloning-zero-shot/775ae416-49bb-4fb6-bd45-740f205d20a1/jennifersaad/manifest.json", apiKey: apiKey,language: languageToCode[language]});
     }else if(ttsService === "openrealtime"){
-      ttsRef = textToSpeechOpenRealtime(rtmpPusher,{voice_id: voice || "alloy", apiKey: apiKey,language: languageToCode[language], instructions: instructions});
+      ttsRef = textToSpeechOpenRealtime(rtmpPusher,{voice_id: voice || "alloy", apiKey: apiKey,language: languageToCode[language], instructions: instructions, sourceLanguage});
     }
 
   console.log('WebSocket connected', query);

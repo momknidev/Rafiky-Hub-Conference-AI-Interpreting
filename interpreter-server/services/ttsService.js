@@ -485,7 +485,10 @@ export const textToSpeechOpenRealtime = (rtmpPusher, cfg = {}) => {
           rate: 24000,
         },
         turn_detection: {
-          type: "semantic_vad"
+          type: "server_vad",
+          // threshold: 0.7,
+          // prefix_padding_ms: 150,
+          // silence_duration_ms: 600,
         }
       },
       output: {
@@ -495,7 +498,7 @@ export const textToSpeechOpenRealtime = (rtmpPusher, cfg = {}) => {
         },
         voice: voice,
       }
-    },
+    }
   }
 
   const ws = new WebSocket(`${url}?model=${model}`, {

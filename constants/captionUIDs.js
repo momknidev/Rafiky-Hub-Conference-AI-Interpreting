@@ -146,20 +146,20 @@ export const intrepreterUids = {
 
 
 export const ttsProviders = [
+    // {
+    //     name: "Primary",
+    //     value: "cartesia"
+    // },
+    // {
+    //     name: "Backup 1",
+    //     value: "elevenlabs"
+    // },
+    // {
+    //     name: "Backup 2",
+    //     value: "deepgram"
+    // },
     {
         name: "Primary",
-        value: "cartesia"
-    },
-    {
-        name: "Backup 1",
-        value: "elevenlabs"
-    },
-    {
-        name: "Backup 2",
-        value: "deepgram"
-    },
-    {
-        name: "Backup 3",
         value: "openrealtime"
     },
 ]
