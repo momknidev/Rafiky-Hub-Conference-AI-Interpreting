@@ -928,7 +928,7 @@ const Listner = () => {
 
   return (
     <>
-      {
+      {/* {
         (subtitleOpen && subTitle.length > 0) && (
           <div className="fixed bottom-4 border border-gray-200 left-4 right-4 bg-white p-4 shadow-lg rounded-md z-50 h-[15rem] overflow-y-auto space-y-4 max-w-3xl mx-auto" ref={subTitleContainerRef}>
             <Button size="icon" variant="ghost" onClick={() => setSubtitleOpen(false)} className="absolute top-2 right-2 cursor-pointer text-neutral-900">
@@ -948,7 +948,7 @@ const Listner = () => {
             ))}
           </div>
         )
-      }
+      } */}
 
 
       <div className="min-h-screen bg-zero-beige">
@@ -1088,7 +1088,7 @@ const Listner = () => {
                           )}
                         </Button>
 
-                        {
+                        {/* {
                           subtitleOpen == false && (
                             <Button
                               onClick={() => setSubtitleOpen(true)}
@@ -1098,7 +1098,7 @@ const Listner = () => {
                               Open Subtitles
                             </Button>
                           )
-                        }
+                        } */}
                       </>
                     )
                     }
