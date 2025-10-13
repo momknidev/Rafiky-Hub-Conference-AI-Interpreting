@@ -486,6 +486,8 @@ export const textToSpeechOpenRealtime = (rtmpPusher, cfg = {}) => {
         },
         turn_detection: {
           type: "server_vad",
+          interrupt_response:false,
+          create_response:true
           // threshold: 0.7,
           // prefix_padding_ms: 150,
           // silence_duration_ms: 600,
