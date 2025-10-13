@@ -46,9 +46,9 @@ export const interpreters = [
     "english",
     // "russian",
     "italian",
-    "french",
-    "spanish",
-    "german",
+    // "french",
+    // "spanish",
+    // "german",
 ]
 
 export const codeToLanguage = {
@@ -154,12 +154,12 @@ export const ttsProviders = [
         name: "Backup 1",
         value: "elevenlabs"
     },
-    // {
-    //     name: "Backup 2",
-    //     value: "smallest"
-    // }
     {
         name: "Backup 2",
         value: "deepgram"
+    },
+    {
+        name: "Backup 3",
+        value: "openrealtime"
     },
 ]

@@ -2,6 +2,7 @@ import WebSocket from 'ws';
 import config from 'dotenv';
 config.config({path: '.env.local'});
 import waves from 'wavefile';
+import { NonBinary } from 'lucide-react';
 
 export const textToSpeechDeepgram = (rtmpPusher,config) => {
     let flusherTimeout = null;
@@ -457,4 +458,114 @@ export async function textToSpeechPlayHTWS(rtmpPusher, cfg = {}) {
   const close = () => { try { if (keepTimer) clearInterval(keepTimer); ws.close(); } catch {} };
 
   return { ws, sendText, flushBoundary, close };
+}
+
+
+
+
+export const textToSpeechOpenRealtime = (rtmpPusher, cfg = {}) => {
+  const url = "wss://api.openai.com/v1/realtime"
+  const model = cfg.model || "gpt-realtime-2025-08-28"
+  const apiKey = cfg.apiKey || process.env.OPENAI_API_KEY
+  const instructions = cfg.instructions || "You are a helpful assistant."
+  const voice = cfg.voice || "alloy"
+
+
+  let response = "";
+
+
+  const session_config = {
+    type: "realtime",
+    output_modalities: ["audio"],
+    instructions:instructions,
+    audio: {
+      input: {
+        format: {
+          type: "audio/pcm",
+          rate: 24000,
+        },
+        turn_detection: {
+          type: "semantic_vad"
+        }
+      },
+      output: {
+        format: {
+          type: "audio/pcm",
+          rate: 24000,
+        },
+        voice: voice,
+      }
+    },
+  }
+
+  const ws = new WebSocket(`${url}?model=${model}`, {
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  ws.on('open', () => {
+    console.log('OpenAI Realtime TTS: Connected');
+    ws.send(JSON.stringify({
+      type: "session.update",
+      session: session_config
+    }));
+
+    console.log("Session set up")
+  });
+
+  ws.on('error', (err) => {
+    console.error('OpenAI Realtime TTS: Error', err);
+  });
+
+  ws.on('close', () => {
+    console.log('OpenAI Realtime TTS: Closed');
+  });
+  
+  ws.on('message', (data) => {
+    const msg = JSON.parse(data.toString());
+    // console.log('OpenAI Realtime TTS: Message', msg);
+    if(msg.type === "error"){
+      console.error('OpenAI Realtime TTS: Error', msg.error);
+    }else if(msg.type === "response.text.delta"){
+      const text = msg.text;
+      response += text;
+    }else if(msg.type === "response.output_audio.delta"){
+      const audio = msg.delta;
+      const pcmBuf = Buffer.from(audio, 'base64');
+        const typed = new Int16Array(pcmBuf.buffer, pcmBuf.byteOffset, pcmBuf.byteLength / 2);
+        const wav = new waves.WaveFile();
+        wav.fromScratch(
+          1,
+          24000,               
+          "16",
+          typed
+        );
+        wav.toSampleRate(44100);
+        const samples = Buffer.from(wav.data.samples);
+        rtmpPusher.pushChunk(samples);
+    }else if(msg.type === "response.audio.done"){
+      console.log('OpenAI Realtime TTS: Response', response);
+    }else if(msg.type === "response.done"){
+      console.log(msg?.response?.status_details?.error)
+      console.log('OpenAI Realtime TTS: Response end');
+    }
+  });
+
+
+  const sendAudio = (audio) => {
+    ws.send(JSON.stringify({
+      "type": "input_audio_buffer.append",
+      "audio": audio  // base64 encoded audio
+    }));
+  }
+
+  
+  return {
+    ws,
+    sendAudio,
+    close: () => { try { ws.close(); } catch {} },
+  };
+  
 }

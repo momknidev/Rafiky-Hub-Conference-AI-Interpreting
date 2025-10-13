@@ -20,6 +20,10 @@ import { usePrototype } from '@/hooks/usePrototype';
 import { LanguageBotMap, codeToLanguage, defaultData, interpreters, ttsProviders } from '@/constants/captionUIDs';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from './ui/select';
 import { Input } from './ui/input';
+import { WavRecorder } from "wavtools";
+import { Utils } from "@/utils/utility";
+
+
 
 // Async Agora SDK loader
 const loadAgoraSDK = async () => {
@@ -79,6 +83,18 @@ const voices = {
         "id": "Dzlw1nIlAqiOOW6J7qo1",
         "gender": "Female"
       }
+    ],
+    "openrealtime": [
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Female"
+      },
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Male"
+      }
     ]
   },
   "russian": {
@@ -123,6 +139,18 @@ const voices = {
         "name": "Lily",
         "id": "Xb7hH8MSUJpSbSDYk0k2",
         "gender": "Female"
+      }
+    ],
+    "openrealtime": [
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Female"
+      },
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Male"
       }
     ]
   },
@@ -169,6 +197,18 @@ const voices = {
         "id": "	FGY2WhTYpPnrIDTdsKH5",
         "gender": "Female"
       }
+    ],
+    "openrealtime": [
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Female"
+      },
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Male"
+      }
     ]
   },
   "french": {
@@ -213,6 +253,18 @@ const voices = {
         "name": "Lily",
         "id": "Xb7hH8MSUJpSbSDYk0k2",
         "gender": "Female"
+      }
+    ],
+    "openrealtime": [
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Female"
+      },
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Male"
       }
     ]
   },
@@ -259,6 +311,18 @@ const voices = {
         "id": "Xb7hH8MSUJpSbSDYk0k2",
         "gender": "Female"
       }
+    ],
+    "openrealtime": [
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Female"
+      },
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Male"
+      }
     ]
   },
   "german": {
@@ -304,9 +368,42 @@ const voices = {
         "id": "Xb7hH8MSUJpSbSDYk0k2",
         "gender": "Female"
       }
+    ],
+    "openrealtime": [
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Female"
+      },
+      {
+        "name": "Alloy",
+        "id": "alloy",
+        "gender": "Male"
+      }
     ]
   },
 }
+
+
+const instructionsPrompt = `
+  Act as a certified professional interpreter specializing in energy sector interpreting from {$SOURCE_LANGUAGE} to {$TARGET_LANGUAGE}.
+
+  Important Rules:
+  - Do not say anything other than the interpretation.
+  - Do not explain, comment, or ask for confirmation.
+  - Only interpret what is said — nothing more, nothing less.
+  - Maintain the same tone, formality, and intent as the speaker.
+  - Use precise, industry-standard terminology used in the energy sector (renewables, oil & gas, transmission, etc.).
+  - Ensure full accuracy in technical, legal, and scientific terms.
+  - Do speak anything except the interpretation.
+  - Do not talk just do interpretation.
+
+  If an untranslatable or unclear term appears, mark it as:
+  [INTERPRETER NOTE: clarification needed]
+
+  Output:
+  → Only provide the interpreted speech. Do not include any other text or meta explanations.
+`
 
 const Broadcast = () => {
   const params = useParams();
@@ -324,11 +421,19 @@ const Broadcast = () => {
   const [firstLoad, setFirstLoad] = useState(true);
   const [language, setParamsLanguage] = useState(languageParam);
   const hostUidRef = useRef(null);
+  const [instructions, setInstructions] = useState(instructionsPrompt);
+
+
+
+  const getInstructionsPrompt = (targetLanguage) => {
+    return instructionsPrompt.replace("{$SOURCE_LANGUAGE}", language).replace("{$TARGET_LANGUAGE}", targetLanguage);
+  }
 
 
   const websocketRefs = useRef({});
   const router = useRouter();
   const langRef = useRef(language);
+  const mediaRecorderRef = useRef(new WavRecorder({ sampleRate: 24000 }));
 
 
 
@@ -338,14 +443,20 @@ const Broadcast = () => {
 
 
 
-  const [ttsService, setTTSService] = useState('cartesia');
+  const [ttsService, setTTSService] = useState('openrealtime');
   const [voiceGender, setVoiceGender] = useState('Female');
   const [apiKey, setApiKey] = useState('');
+  const ttsServiceRef = useRef(ttsService);
+
+
+  useEffect(() => {
+    ttsServiceRef.current = ttsService;
+  }, [ttsService]);
 
   const connectToInterpreter = async (language) => {
     const { url: rtmpUrl } = await getRTMPUrl(channelName, language);
     const voice = voices[language][ttsService]?.find(voice => voice.gender.toLowerCase() === voiceGender.toLowerCase());
-    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}&ttsService=${ttsService}&apiKey=${apiKey}&voice=${voice?.id}`);
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}&ttsService=${ttsService}&apiKey=${apiKey}&voice=${voice?.id}&sourceLanguage=${language}&instructions=${getInstructionsPrompt(language)}`);
 
     ws.onopen = () => {
       console.log("Interpreter connected");
@@ -788,6 +899,24 @@ const Broadcast = () => {
         connectToInterpreter(language);
       });
 
+
+
+
+      //send send audio chunks to the ws
+      if (ttsServiceRef.current !== "openrealtime") return;
+      await mediaRecorderRef.current.begin();
+
+      await mediaRecorderRef.current.record((data) => {
+        const base64 = Utils.arrayBufferToBase64(data.mono);
+        interpreters.filter(lang => lang !== language).forEach(language => {
+          if(websocketRefs.current[language]?.readyState === 1) {
+            websocketRefs.current[language]?.send(JSON.stringify({ type: "audio", audio: base64 }));
+          }
+        });
+      });
+
+      
+
     } catch (error) {
       console.error("Error starting stream:", error);
 
@@ -855,9 +984,18 @@ const Broadcast = () => {
 
       toast.info("Broadcast stopped. Thank you for your interpretation!", { duration: 4000 });
 
+
+      if (mediaRecorderRef.current.getStatus() === "recording") {
+        await mediaRecorderRef.current.pause();
+        const finalAudio = await mediaRecorderRef.current?.end();
+        console.log(finalAudio);
+      }
+
       interpreters.forEach(language => {
         websocketRefs.current[language]?.close();
       });
+
+
 
     } catch (error) {
       console.error("Error stopping stream:", error);
@@ -1073,7 +1211,7 @@ const Broadcast = () => {
     //start the stream
     const agentRes = await StartCaption(channelName, language, hostUidRef.current);
     agentSttRef.current = agentRes.agentId;
-    console.log(agentRes, "agentResagentResagentRes",hostUidRef.current);
+    console.log(agentRes, "agentResagentResagentRes", hostUidRef.current);
 
     interpreters.filter(lang => lang !== language).forEach(language => {
       connectToInterpreter(language);
@@ -1398,6 +1536,16 @@ const Broadcast = () => {
                         ))}
                       </div>
                     </div>
+
+
+                    {
+                      ttsService === "openrealtime" && (
+                        <div>
+                          <span className="text-zero-text/70 font-medium block mb-1 mt-2">Instructions</span>
+                          <textarea className="w-full h-24 p-2 border border-gray-300 rounded-md" value={instructions} onChange={(e) => setInstructions(e.target.value)} />
+                        </div>
+                      )
+                    }
                   </div>
                   <div className="grid grid-cols-2 gap-6 text-sm font-inter">
                     <div className="space-y-6">

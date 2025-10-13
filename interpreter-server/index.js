@@ -36,7 +36,7 @@ import fs from 'fs';
 import waveFile from 'wavefile';
 import config from 'dotenv';
 config.config({path: '.env.local'});
-import { textToSpeechDeepgram, textToSpeechSmallest, textToSpeechCartesia, textToSpeechElevenLabsWS, textToSpeechPlayHTWS } from './services/ttsService.js';
+import { textToSpeechDeepgram, textToSpeechSmallest, textToSpeechCartesia, textToSpeechElevenLabsWS, textToSpeechPlayHTWS, textToSpeechOpenRealtime } from './services/ttsService.js';
 import WebSocket from 'ws';
 const app = express();
 expressWs(app);
@@ -67,6 +67,7 @@ app.ws('/interpreter', (ws, req) => {
   const ttsService = query.ttsService;
   const apiKey = query.apiKey;
   const voice = query.voice;
+  const instructions = query.instructions || "You are a helpful assistant.";
 
   const config = {
     isDisconnected: false,
@@ -89,6 +90,8 @@ app.ws('/interpreter', (ws, req) => {
       ttsRef = textToSpeechElevenLabsWS(rtmpPusher,{voice_id: voice || "JBFqnCBsd6RMkjVDRZzb", apiKey: apiKey,language: languageToCode[language]});
     }else if(ttsService === "playht"){
       ttsRef = textToSpeechPlayHTWS(rtmpPusher,{voice_id: voice || "s3://voice-cloning-zero-shot/775ae416-49bb-4fb6-bd45-740f205d20a1/jennifersaad/manifest.json", apiKey: apiKey,language: languageToCode[language]});
+    }else if(ttsService === "openrealtime"){
+      ttsRef = textToSpeechOpenRealtime(rtmpPusher,{voice_id: voice || "alloy", apiKey: apiKey,language: languageToCode[language], instructions: instructions});
     }
 
   console.log('WebSocket connected', query);
@@ -98,14 +101,17 @@ app.ws('/interpreter', (ws, req) => {
     if(type === "translation"){
       const text = data.text;
       const language = data.language;
-      console.log('translation: ', text, language, ttsRef.ws.readyState);
-      if(ttsRef.ws.readyState === WebSocket.OPEN){
-        // ttsRef.send(JSON.stringify({ 'type': 'Speak', 'text': text }));
-        // ttsRef.send(JSON.stringify({ 'type': 'Flush' }));
+      if(ttsRef.ws.readyState === WebSocket.OPEN && ttsService !== "openrealtime"){
+        console.log('translation: ', text, language, ttsRef.ws.readyState);
         ttsRef.sendText(text);
       }
     }else if(type === "pong"){
       console.log("pong received");
+    }else if(type === "audio"){
+      if(ttsRef.ws.readyState === WebSocket.OPEN && ttsService === "openrealtime"){
+        const audio = data.audio;
+        ttsRef.sendAudio(audio);
+      }
     }
   });
 
