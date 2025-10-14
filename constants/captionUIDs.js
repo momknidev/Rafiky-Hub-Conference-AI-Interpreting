@@ -162,10 +162,5 @@ export const ttsProviders = [
     {
         name: "Deepgram STT",
         value: "openrealtime"
-    },
-
-    {
-        name: "Speechmatics STT",
-        value: "openrealtime"
-    },
+    }
 ]
