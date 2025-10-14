@@ -36,8 +36,10 @@ import fs from 'fs';
 import waveFile from 'wavefile';
 import config from 'dotenv';
 config.config({path: '.env.local'});
+import { azureService } from './services/azureService.js';
 import { textToSpeechDeepgram, textToSpeechSmallest, textToSpeechCartesia, textToSpeechElevenLabsWS, textToSpeechPlayHTWS, textToSpeechOpenRealtime } from './services/ttsService.js';
 import WebSocket from 'ws';
+import { TranscriptionService } from './services/translationService.js';
 const app = express();
 expressWs(app);
 
@@ -59,6 +61,43 @@ export const languageToCode = {
   swedish: "sv",
   turkish: "tr",
 };
+
+
+const deepgramLanguages = {
+  bulgarian: "bg",
+  catalan: "ca",
+  czech: "cs",
+  danish: "da",
+  german: "de",
+  greek: "el",
+  english: "en-US",
+  spanish: "es",
+  estonian: "et",
+  finnish: "fi",
+  french: "fr",
+  hindi: "hi",
+  hungarian: "hu",
+  indonesian: "id",
+  italian: "it",
+  japanese: "ja",
+  korean: "ko-KR",
+  lithuanian: "lt",
+  latvian: "lv",
+  malay: "ms",
+  dutch: "nl",
+  norwegian: "no",
+  polish: "pl",
+  portuguese: "pt-PT",
+  brazilianPortuguese: "pt-BR",
+  romanian: "ro",
+  russian: "ru",
+  slovak: "sk",
+  swedish: "sv-SE",
+  tamazight: "taq",
+  thai: "th-TH"
+};
+
+
 
 app.ws('/interpreter', (ws, req) => {
   const query = req.query;
@@ -92,7 +131,18 @@ app.ws('/interpreter', (ws, req) => {
     }else if(ttsService === "playht"){
       ttsRef = textToSpeechPlayHTWS(rtmpPusher,{voice_id: voice || "s3://voice-cloning-zero-shot/775ae416-49bb-4fb6-bd45-740f205d20a1/jennifersaad/manifest.json", apiKey: apiKey,language: languageToCode[language]});
     }else if(ttsService === "openrealtime"){
-      ttsRef = textToSpeechOpenRealtime(rtmpPusher,{voice_id: voice || "alloy", apiKey: apiKey,language: languageToCode[language], instructions: instructions, sourceLanguage});
+      // ttsRef = textToSpeechOpenRealtime(rtmpPusher,{voice_id: voice || "alloy", apiKey: apiKey,language: languageToCode[language], instructions: instructions, sourceLanguage});
+       
+      ttsRef = new TranscriptionService(deepgramLanguages[sourceLanguage])
+     
+    }else if(ttsService === "azure"){
+      try{
+        ttsRef = azureService(rtmpPusher,{fromLang: languageToCode[sourceLanguage],ttsLang: languageToCode[language]});
+      }catch(e){
+        console.error('Error initializing azure service', e);
+      }
+    }else{
+      console.error('Invalid TTS service', ttsService);
     }
 
   console.log('WebSocket connected', query);
@@ -102,19 +152,28 @@ app.ws('/interpreter', (ws, req) => {
     if(type === "translation"){
       const text = data.text;
       const language = data.language;
-      if(ttsRef.ws.readyState === WebSocket.OPEN && ttsService !== "openrealtime"){
+      if(ttsRef.ws.readyState === WebSocket.OPEN && (ttsService !== "openrealtime" && ttsService !== "azure")){
         console.log('translation: ', text, language, ttsRef.ws.readyState);
         ttsRef.sendText(text);
       }
     }else if(type === "pong"){
       console.log("pong received");
     }else if(type === "audio"){
-      if(ttsRef.ws.readyState === WebSocket.OPEN && ttsService === "openrealtime"){
+      if(ttsRef.ws.readyState === WebSocket.OPEN && (ttsService === "openrealtime" || ttsService === "azure")){
         const audio = data.audio;
         ttsRef.sendAudio(audio);
       }
     }
   });
+
+
+
+  if(ttsService === "openrealtime"){
+    ttsRef.on("transcription", (transcription) => {
+      ws.send(JSON.stringify({ type: 'caption', transcription: transcription }));
+      console.log('caption: ', transcription);
+    });
+  }
 
   //ping
   const pingInterval = setInterval(() => {

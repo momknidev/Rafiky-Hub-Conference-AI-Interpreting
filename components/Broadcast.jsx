@@ -449,16 +449,26 @@ const Broadcast = () => {
   const [voiceGender, setVoiceGender] = useState('Female');
   const [apiKey, setApiKey] = useState('');
   const ttsServiceRef = useRef(ttsService);
+  const [subtitles, setSubtitles] = useState([]);
+  const containerRef = useRef(null);
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [subtitles]);
 
 
   useEffect(() => {
     ttsServiceRef.current = ttsService;
   }, [ttsService]);
 
-  const connectToInterpreter = async (language) => {
-    const { url: rtmpUrl } = await getRTMPUrl(channelName, language);
-    const voice = voices[language][ttsService]?.find(voice => voice.gender.toLowerCase() === voiceGender.toLowerCase());
-    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${language}&rtmpUrl=${rtmpUrl}&ttsService=${ttsService}&apiKey=${apiKey}&voice=${voice?.id}&sourceLanguage=${language}&instructions=${getInstructionsPrompt(language)}`);
+  const connectToInterpreter = async (lang) => {
+    const { url: rtmpUrl } = await getRTMPUrl(channelName, lang);
+    const voice = voices[lang][ttsService]?.find(voice => voice.gender.toLowerCase() === voiceGender.toLowerCase());
+    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_INTERPRETER_SERVER}/interpreter?language=${lang}&rtmpUrl=${rtmpUrl}&ttsService=${ttsService}&apiKey=${apiKey}&voice=${voice?.id}&sourceLanguage=${language}&instructions=${getInstructionsPrompt(lang)}`);
 
     ws.onopen = () => {
       console.log("Interpreter connected");
@@ -468,6 +478,9 @@ const Broadcast = () => {
       if (data.type == "ping") {
         console.log("ping received");
         ws.send(JSON.stringify({ type: 'pong' }));
+      }else if(data.type == "caption"){
+        setSubtitles(prev => [...prev, { text: data.transcription, language: lang }]);
+        console.log(data.transcription, "caption");
       }
     };
     ws.onclose = () => {
@@ -476,7 +489,7 @@ const Broadcast = () => {
     ws.onerror = (event) => {
       console.log("Interpreter error", event);
     };
-    websocketRefs.current[language] = ws;
+    websocketRefs.current[lang] = ws;
   }
 
 
@@ -1089,6 +1102,7 @@ const Broadcast = () => {
     channel.bind('on-reject-to-handover', (data) => {
       setHandoverRequestResponse("rejected");
     });
+  
 
     return () => {
       channel.unbind_all();
@@ -1302,6 +1316,19 @@ const Broadcast = () => {
 
   return (
     <div className='monstant-font'>
+
+      {
+        subtitles.length > 0 && (
+          <div className='fixed bottom-4 border border-gray-200 left-4 right-4 bg-white p-4 shadow-lg rounded-md z-50 h-[15rem] overflow-y-auto space-y-4 max-w-3xl mx-auto' ref={containerRef}>
+            {subtitles.map((subtitle) => (
+              <div key={subtitle.uuid} className='flex items-center gap-3'>
+                <img src={flagsMapping[subtitle.language]} alt={subtitle.language} className='w-6 h-6' />
+                <p className='text-sm text-zero-text/70 font-inter font-light'>{subtitle.text}</p>
+              </div>
+            ))}
+          </div>
+        )
+      }
       {
         waitingForResponseToHandoverRquestPopup && (
           <Dialog>
