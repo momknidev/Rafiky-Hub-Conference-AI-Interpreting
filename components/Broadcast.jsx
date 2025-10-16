@@ -678,8 +678,8 @@ const Broadcast = () => {
       const audioTrack = await AgoraRTC.createMicrophoneAudioTrack({
         encoderConfig: {
           sampleRate: 48000,
-          stereo: true,
-          bitrate: 128,
+          stereo: false,
+          bitrate: 32,
         },
         ANS: true, // Automatic Noise Suppression
         AEC: true, // Acoustic Echo Cancellation
@@ -1218,7 +1218,7 @@ const Broadcast = () => {
         </header>
 
         {/* Connection Alert Banner */}
-        {(isReconnecting || connectionStatus === 'error' || connectionError) && (
+        {/* {(isReconnecting || connectionStatus === 'error' || connectionError) && (
           <div className={`w-full p-4 ${isReconnecting ? 'bg-blue-50 border-blue-200' : 'bg-red-50 border-red-200'
             } border-b`}>
             <div className="container mx-auto flex items-center gap-3">
@@ -1241,7 +1241,7 @@ const Broadcast = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Main Content */}
         <main className="container mx-auto p-8 max-w-7xl">
@@ -1262,21 +1262,6 @@ const Broadcast = () => {
                       ))
                     }
                   </div>
-                  {/* <Select
-                    defaultValue={language}
-                    onValueChange={(value) => router.push(`/booth/${value}`)}
-                  >
-                    <SelectTrigger className='cursor-pointer w-full !bordor-transparent bg-white mb-3 border-gray-100 shadow-md'>
-                      <SelectValue placeholder="Select Language" className='flex items-center gap-2 cursor-pointer'><img src={flagsMapping[language]} alt={language} className='w-6 h-6' />{language?.slice(0, 1).toUpperCase()}{language?.slice(1).toLowerCase()}</SelectValue>
-                    </SelectTrigger>
-                    <SelectContent className='bg-white border-none shadow-md'>
-                      {
-                        languages.map((language) => (
-                          <SelectItem value={language.value} key={language.value} className='flex items-center gap-2 cursor-pointer'><img src={language.flag} alt={language.name} className='w-6 h-6' />{language.name}</SelectItem>
-                        ))
-                      }
-                    </SelectContent>
-                  </Select> */}
                 </div>
 
                 <div className="space-y-10">

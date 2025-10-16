@@ -10,7 +10,7 @@ import { generateToken } from '@/utils/generateToken';
 import { useChannel } from '@/context/ChannelContext';
 import { useParams } from 'next/navigation';
 import { flagsMapping } from '@/constants/flagsMapping';
-import { LanguageBotMap, codeToLanguage, defaultData, intrepreterUids } from '@/constants/captionUIDs';
+import { LanguageBotMap, codeToLanguage, defaultData, intrepreterUids , textMessages} from '@/constants/captionUIDs';
 import { usePrototype } from '@/hooks/usePrototype';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -940,7 +940,7 @@ const Listner = () => {
                   item.text &&
                   <div key={item.uuid} className="flex items-center gap-3">
                     <img src={flagsMapping[language]} alt={language} className="w-6 h-6" />
-                    <h2 className="text-sm text-zero-text/70 font-inter font-light">{item.text} - {transcript[item.uuid]}</h2>
+                    <h2 className="text-sm text-zero-text/70 font-inter font-light">{item.text}</h2>
                   </div>
                 }
 
@@ -954,22 +954,22 @@ const Listner = () => {
       <div className="min-h-screen bg-zero-beige">
         {/* Festival Header */}
         <div className="w-full overflow-hidden">
-          <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]">
+          <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-black p-4">
             <img
               src="/images/main-logo.png"
               alt="Novamarine"
-              className="object-contain mx-auto mt-10"
+              className="object-contain mx-auto w-[15rem] md:w-[17rem]"
               loading="eager"
-              width="200"
-              height="200"
             />
+
           </div>
+          
         </div>
 
         <main className="w-full px-4 py-6 sm:px-6 sm:py-8">
           {/* Service Title */}
           <div className="text-center mb-10 sm:mb-12">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-inter font-bold text-zero-text mb-6 flex items-center justify-center">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-inter font-bold text-zero-text mb-3 flex items-center justify-center">
               Live {language?.slice(0, 1).toUpperCase()}{language?.slice(1).toLowerCase()} Interpretation Service
             </h1>
 
@@ -1041,6 +1041,8 @@ const Listner = () => {
               <div className="space-y-8">
 
                 {/* Primary Control Card */}
+            <p className="text-gray-500 font-inter font-light text-center px-4 max-w-[50rem] mx-auto mb-6">{textMessages[language?.toLowerCase()]}</p>
+
                 <Card className="bg-white/90 border-0 rounded-2xl">
                   <div className="p-8 text-center">
                     <div className="w-24 h-24 lg:w-32 lg:h-32 bg-gradient-to-br from-zero-brand to-zero-blue rounded-full mx-auto mb-8 flex items-center justify-center transform transition-all duration-300 hover:scale-105">

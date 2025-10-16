@@ -143,7 +143,15 @@ export const intrepreterUids = {
     "vietnamese": 600027,
 }
 
-
+export const textMessages = {
+    english: `Waiting for Broadcaster” button will disappear and the “Start Listening” button will appear.
+Click on “Start Listening” to begin listening to the translation.`,
+    german: `Warten Sie auf den Sprecher - der “Start Listening” Button wird angezeigt. Klicken Sie auf “Start Listening”, um die Übersetzung zu hören.`,
+    french: `Attendre le diffuseur - le bouton “Start Listening” apparaîtra. Cliquez sur “Start Listening” pour commencer à écouter la traduction.`,
+    spanish: `Espera al locutor - el botón “Start Listening” aparecerá. Haz clic en “Start Listening” para comenzar a escuchar la traducción.`,
+    italian: `Aspetta il diffusore - il pulsante “Start Listening” apparirà. Clicca su “Start Listening” per iniziare a ascoltare la traduzione.`,
+    portuguese: `Aguarde o transmissor - o botão “Start Listening” aparecerá. Clique em “Start Listening” para começar a ouvir a tradução.`,
+}
 
 export const ttsProviders = [
     {
