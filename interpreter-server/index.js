@@ -39,7 +39,8 @@ config.config({path: '.env.local'});
 import { azureService } from './services/azureService.js';
 import { textToSpeechDeepgram, textToSpeechSmallest, textToSpeechCartesia, textToSpeechElevenLabsWS, textToSpeechPlayHTWS, textToSpeechOpenRealtime } from './services/ttsService.js';
 import WebSocket from 'ws';
-import { TranscriptionService } from './services/translationService.js';
+import { SpeechmaticsTranscriptionService, TranscriptionService } from './services/translationService.js';
+import { PipeLineService } from './services/pipeLineService.js';
 const app = express();
 expressWs(app);
 
@@ -120,6 +121,8 @@ app.ws('/interpreter', (ws, req) => {
 
     //text to speech
     let ttsRef;
+    let sttRef;
+    let pipeLineRef;
     if(ttsService === "deepgram"){
       ttsRef = textToSpeechDeepgram(rtmpPusher,{voice_id: voice || "aura-asteria-en", apiKey: apiKey,language: languageToCode[language]});
     }else if(ttsService === "smallest"){
@@ -133,8 +136,9 @@ app.ws('/interpreter', (ws, req) => {
     }else if(ttsService === "openrealtime"){
       // ttsRef = textToSpeechOpenRealtime(rtmpPusher,{voice_id: voice || "alloy", apiKey: apiKey,language: languageToCode[language], instructions: instructions, sourceLanguage});
        
-      ttsRef = new TranscriptionService(deepgramLanguages[sourceLanguage])
-     
+      sttRef = new TranscriptionService(deepgramLanguages[sourceLanguage])
+      ttsRef = textToSpeechElevenLabsWS(rtmpPusher,{voice_id: "JBFqnCBsd6RMkjVDRZzb", apiKey: apiKey,language: languageToCode[language]});
+      pipeLineRef = new PipeLineService(ttsRef, sttRef, sourceLanguage, language);
     }else if(ttsService === "azure"){
       try{
         ttsRef = azureService(rtmpPusher,{fromLang: languageToCode[sourceLanguage],ttsLang: languageToCode[language]});
@@ -161,19 +165,11 @@ app.ws('/interpreter', (ws, req) => {
     }else if(type === "audio"){
       if(ttsRef.ws.readyState === WebSocket.OPEN && (ttsService === "openrealtime" || ttsService === "azure")){
         const audio = data.audio;
-        ttsRef.sendAudio(audio);
+        sttRef.sendAudio(audio);
       }
     }
   });
 
-
-
-  if(ttsService === "openrealtime"){
-    ttsRef.on("transcription", (transcription) => {
-      ws.send(JSON.stringify({ type: 'caption', transcription: transcription }));
-      console.log('caption: ', transcription);
-    });
-  }
 
   //ping
   const pingInterval = setInterval(() => {
