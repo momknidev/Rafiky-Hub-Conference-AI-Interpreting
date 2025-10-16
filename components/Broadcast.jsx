@@ -14,7 +14,7 @@ import { pushMessage } from '@/services/PusherService';
 import Dialog from './Dialog';
 import { useChannel } from '@/context/ChannelContext';
 import { useParams, useRouter } from 'next/navigation';
-import { flagsMapping, languages } from '@/constants/flagsMapping';
+import { flagsMapping, languages, sourceLanguages } from '@/constants/flagsMapping';
 import { StartCaption, StopCaption, getRTMPUrl } from '@/services/CaptionService';
 import { usePrototype } from '@/hooks/usePrototype';
 import { LanguageBotMap, codeToLanguage, defaultData, interpreters, ttsProviders } from '@/constants/captionUIDs';
@@ -1257,7 +1257,7 @@ const Broadcast = () => {
                   <span className="text-zero-text/70 font-medium block mb-1">Source Language</span>
                   <div className="flex gap-2 items-center mb-4">
                     {
-                      languages.map((lang) => (
+                      sourceLanguages.map((lang) => (
                         <Button key={lang.value} variant="outline" className={`bg-white flex-1 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md border-none text-zero-text hover:bg-zero-green hover:text-white ${lang.value === language ? 'bg-zero-green text-white' : ''}`} onClick={() => handleSourceLanguageChange(lang.value)}>{lang.name}</Button>
                       ))
                     }
