@@ -14,11 +14,11 @@ export const flagsMapping = {
 }
 
 export const languages = [
-    {
-        name: 'ITALIAN',
-        value: 'italian',
-        flag: '/flags/it.svg',
-    },
+    // {
+    //     name: 'ITALIAN',
+    //     value: 'italian',
+    //     flag: '/flags/it.svg',
+    // },
     {
         name: 'ENGLISH',
         value: 'english',

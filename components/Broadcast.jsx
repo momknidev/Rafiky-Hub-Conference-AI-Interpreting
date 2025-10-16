@@ -341,6 +341,7 @@ const Broadcast = () => {
   const [ttsService, setTTSService] = useState('cartesia');
   const [voiceGender, setVoiceGender] = useState('Female');
   const [apiKey, setApiKey] = useState('');
+  const [mute,setMute] = useState(false)
 
   const connectToInterpreter = async (language) => {
     const { url: rtmpUrl } = await getRTMPUrl(channelName, language);
@@ -1060,6 +1061,13 @@ const Broadcast = () => {
   };
 
 
+  const handleMuteUnmute = () => {
+    
+    localAudioTrack.setMuted(!mute)
+    setMute(prev => !prev);
+  }
+
+
 
   const handleSwitchLanguage = async (language) => {
     setLoading(true);
@@ -1328,15 +1336,29 @@ const Broadcast = () => {
                       <h4 className="text-2xl font-playfair font-bold text-zero-text">
                         Audio Monitor
                       </h4>
+
+                      <div className='flex items-center gap-3'>
+                        
                       <Button
                         onClick={handleMicToggle}
                         variant="outline"
                         size="sm"
                         className="border-zero-navy text-zero-text hover:bg-zero-navy hover:text-white font-inter font-medium"
                         disabled={isLive}
-                      >
+                        >
                         {isMicConnected ? 'Disconnect' : 'Connect'}
                       </Button>
+                      
+                      <Button
+                        onClick={handleMuteUnmute}
+                        variant="outline"
+                        size="sm"
+                        className="border-zero-navy text-zero-text hover:bg-zero-navy hover:text-white font-inter font-medium"
+                        disabled={!isLive}
+                        >
+                        {mute ? 'Unmute' : 'Mute'}
+                      </Button>
+                      </div>
                     </div>
 
                     <AudioLevelMeter

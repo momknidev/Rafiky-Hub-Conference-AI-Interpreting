@@ -144,11 +144,10 @@ export const intrepreterUids = {
 }
 
 export const textMessages = {
-    english: `Waiting for Broadcaster” button will disappear and the “Start Listening” button will appear.
-Click on “Start Listening” to begin listening to the translation.`,
-    german: `Warten Sie auf den Sprecher - der “Start Listening” Button wird angezeigt. Klicken Sie auf “Start Listening”, um die Übersetzung zu hören.`,
-    french: `Attendre le diffuseur - le bouton “Start Listening” apparaîtra. Cliquez sur “Start Listening” pour commencer à écouter la traduction.`,
-    spanish: `Espera al locutor - el botón “Start Listening” aparecerá. Haz clic en “Start Listening” para comenzar a escuchar la traducción.`,
+    english: `At the beginning of the Masterclass, the message “Waiting for Broadcaster” will disappear. You will then see the “Start Listening” button — click on it to start listening to the live translation.`,
+    german: `Zu Beginn der Masterclass verschwindet die Meldung “Waiting for Broadcaster”. Danach erscheint die Schaltfläche “Start Listening” – klicken Sie darauf, um die Live-Übersetzung zu hören.`,
+    french: `Au début de la Masterclass, le message “Waiting for Broadcaster” disparaîtra. Le bouton “Start Listening” apparaîtra ensuite : cliquez dessus pour commencer à écouter la traduction en direct.`,
+    spanish: `Al comienzo de la Masterclass, desaparecerá el mensaje “Waiting for Broadcaster”. A continuación aparecerá el botón “Start Listening”; haz clic en él para escuchar la traducción en directo.`,
     italian: `Aspetta il diffusore - il pulsante “Start Listening” apparirà. Clicca su “Start Listening” per iniziare a ascoltare la traduzione.`,
     portuguese: `Aguarde o transmissor - o botão “Start Listening” aparecerá. Clique em “Start Listening” para começar a ouvir a tradução.`,
 }
