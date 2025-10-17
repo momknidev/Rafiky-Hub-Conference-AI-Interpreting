@@ -175,7 +175,7 @@ const voices = {
     "cartesia": [
       {
         "name": "Natalya - Soothing Guide",
-        "id": "8832a0b5-47b2-4751-bb22-6a8e2149303d",
+        "id": "65b25c5d-ff07-4687-a04c-da2f43ef6fa9",
         "gender": "Female"
       },
       {
@@ -265,7 +265,7 @@ const voices = {
     "cartesia": [
       {
         "name": "Natalya - Soothing Guide",
-        "id": "1ade29fc-6b82-4607-9e70-361720139b12",
+        "id": "b9de4a89-2257-424b-94c2-db18ba68c81a",
         "gender": "Female"
       },
       {
