@@ -11,6 +11,7 @@ export const flagsMapping = {
     czech: '/flags/cz.svg',
     hungarian: '/flags/hu.svg',
     russian: '/flags/ru.svg',
+    spanish: '/flags/es.svg',
 }
 
 export const languages = [

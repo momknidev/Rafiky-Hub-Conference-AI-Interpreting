@@ -175,12 +175,12 @@ const voices = {
     "cartesia": [
       {
         "name": "Natalya - Soothing Guide",
-        "id": "779673f3-895f-4935-b6b5-b031dc78b319",
+        "id": "8832a0b5-47b2-4751-bb22-6a8e2149303d",
         "gender": "Female"
       },
       {
         "name": "Sergei - Expressive Narrator",
-        "id": "da05e96d-ca10-4220-9042-d8acef654fa9",
+        "id": "0418348a-0ca2-4e90-9986-800fb8b3bbc0",
         "gender": "Male"
       }
     ],
@@ -220,12 +220,12 @@ const voices = {
     "cartesia": [
       {
         "name": "Natalya - Soothing Guide",
-        "id": "779673f3-895f-4935-b6b5-b031dc78b319",
+        "id": "cefcb124-080b-4655-b31f-932f3ee743de",
         "gender": "Female"
       },
       {
         "name": "Sergei - Expressive Narrator",
-        "id": "da05e96d-ca10-4220-9042-d8acef654fa9",
+        "id": "2695b6b5-5543-4be1-96d9-3967fb5e7fec",
         "gender": "Male"
       }
     ],
@@ -265,12 +265,12 @@ const voices = {
     "cartesia": [
       {
         "name": "Natalya - Soothing Guide",
-        "id": "779673f3-895f-4935-b6b5-b031dc78b319",
+        "id": "1ade29fc-6b82-4607-9e70-361720139b12",
         "gender": "Female"
       },
       {
         "name": "Sergei - Expressive Narrator",
-        "id": "da05e96d-ca10-4220-9042-d8acef654fa9",
+        "id": "b7187e84-fe22-4344-ba4a-bc013fcb533e",
         "gender": "Male"
       }
     ],
@@ -341,7 +341,7 @@ const Broadcast = () => {
   const [ttsService, setTTSService] = useState('cartesia');
   const [voiceGender, setVoiceGender] = useState('Female');
   const [apiKey, setApiKey] = useState('');
-  const [mute,setMute] = useState(false)
+  const [mute, setMute] = useState(false)
 
   const connectToInterpreter = async (language) => {
     const { url: rtmpUrl } = await getRTMPUrl(channelName, language);
@@ -1062,7 +1062,7 @@ const Broadcast = () => {
 
 
   const handleMuteUnmute = () => {
-    
+
     localAudioTrack.setMuted(!mute)
     setMute(prev => !prev);
   }
@@ -1081,7 +1081,7 @@ const Broadcast = () => {
     //start the stream
     const agentRes = await StartCaption(channelName, language, hostUidRef.current);
     agentSttRef.current = agentRes.agentId;
-    console.log(agentRes, "agentResagentResagentRes",hostUidRef.current);
+    console.log(agentRes, "agentResagentResagentRes", hostUidRef.current);
 
     interpreters.filter(lang => lang !== language).forEach(language => {
       connectToInterpreter(language);
@@ -1338,26 +1338,27 @@ const Broadcast = () => {
                       </h4>
 
                       <div className='flex items-center gap-3'>
-                        
-                      <Button
-                        onClick={handleMicToggle}
-                        variant="outline"
-                        size="sm"
-                        className="border-zero-navy text-zero-text hover:bg-zero-navy hover:text-white font-inter font-medium"
-                        disabled={isLive}
-                        >
-                        {isMicConnected ? 'Disconnect' : 'Connect'}
-                      </Button>
-                      
-                      <Button
-                        onClick={handleMuteUnmute}
-                        variant="outline"
-                        size="sm"
-                        className="border-zero-navy text-zero-text hover:bg-zero-navy hover:text-white font-inter font-medium"
-                        disabled={!isLive}
-                        >
-                        {mute ? 'Unmute' : 'Mute'}
-                      </Button>
+
+                          <Button
+                            onClick={handleMuteUnmute}
+                            variant="outline"
+                            size="sm"
+                            className="border-zero-navy text-zero-text hover:bg-zero-navy hover:text-white font-inter font-medium"
+                            disabled={!isLive}
+                          >
+                            {mute ? 'Unmute' : 'Mute'}
+                          </Button>
+                          <Button
+                            onClick={handleMicToggle}
+                            variant="outline"
+                            size="sm"
+                            className="border-zero-navy text-zero-text hover:bg-zero-navy hover:text-white font-inter font-medium"
+                            disabled={isLive}
+                          >
+                            {isMicConnected ? 'Disconnect' : 'Connect'}
+                          </Button>
+                     
+
                       </div>
                     </div>
 
