@@ -46,9 +46,9 @@ export const interpreters = [
     "english",
     // "russian",
     "italian",
-    "french",
-    "spanish",
-    "german",
+    // "french",
+    // "spanish",
+    // "german",
 ]
 
 export const codeToLanguage = {
