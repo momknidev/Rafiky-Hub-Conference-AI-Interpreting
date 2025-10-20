@@ -9,7 +9,7 @@ const LanguageSelect = () => {
 
   return (
     <div className='h-screen w-screen gradient-2 flex flex-col items-center justify-start py-10 px-8 pt-20 overflow-y-auto'>
-      <div className='w-full flex items-center justify-center bg-black'>
+      <div className='w-full flex items-center justify-center'>
         <img src="/images/main-logo.png" alt="Livello Logo" className='w-[15rem] md:w-[17rem] object-cover' />
       </div>
 

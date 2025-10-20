@@ -46,7 +46,7 @@ export const interpreters = [
     "english",
     // "russian",
     "italian",
-    // "french",
+    "french",
     // "spanish",
     // "german",
 ]

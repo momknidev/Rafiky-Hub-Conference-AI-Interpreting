@@ -954,7 +954,7 @@ const Listner = () => {
       <div className="min-h-screen bg-zero-beige">
         {/* Festival Header */}
         <div className="w-full overflow-hidden">
-          <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] bg-black p-4">
+          <div className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] p-4">
             <img
               src="/images/main-logo.png"
               alt="Novamarine"

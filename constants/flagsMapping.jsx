@@ -15,31 +15,31 @@ export const flagsMapping = {
 }
 
 export const languages = [
+    {
+        name: 'ITALIAN',
+        value: 'italian',
+        flag: '/flags/it.svg',
+    },
     // {
-    //     name: 'ITALIAN',
-    //     value: 'italian',
-    //     flag: '/flags/it.svg',
+    //     name: 'ENGLISH',
+    //     value: 'english',
+    //     flag: '/flags/gb-eng.svg',
     // },
-    {
-        name: 'ENGLISH',
-        value: 'english',
-        flag: '/flags/gb-eng.svg',
-    },
-    {
-        name: 'GERMAN',
-        value: 'german',
-        flag: '/flags/de.svg',
-    },
+    // {
+    //     name: 'GERMAN',
+    //     value: 'german',
+    //     flag: '/flags/de.svg',
+    // },
     {
         name: 'FRENCH',
         value: 'french',
         flag: '/flags/fr.svg',
     },
-    {
-        name: 'SPANISH',
-        value: 'spanish',
-        flag: '/flags/es.svg',
-    },
+    // {
+    //     name: 'SPANISH',
+    //     value: 'spanish',
+    //     flag: '/flags/es.svg',
+    // },
     // {
     //     name: 'ROMANIAN',
     //     value: 'romanian',
