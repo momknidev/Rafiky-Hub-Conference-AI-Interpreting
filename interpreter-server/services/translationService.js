@@ -151,3 +151,87 @@ export class SpeechmaticsTranscriptionService extends EventEmitter {
     this.ws.close();
   }
 }
+
+
+
+
+export class OpenAiTranslationService extends EventEmitter {
+  ws = null;
+  isOpen = false;
+  url = "wss://api.openai.com/v1/realtime?intent=transcription"
+  apiKey = process.env.OPENAI_API_KEY
+  model = "gpt-4o-transcribe"
+  prompt = ""
+  constructor(language = 'en', prompt = "") {
+    super();
+    this.ws = new WebSocket(this.url, {
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+        'OpenAI-Beta': 'realtime=v1',
+      },
+    });
+    this.prompt = prompt;
+
+
+    const config = {
+      "type": "transcription_session.update",
+      "session": {
+        "input_audio_format": "pcm16",
+        "input_audio_transcription": {
+          "model": this.model,
+          // "prompt": this.prompt,
+          "language": language
+        },
+        "turn_detection": {
+          "type": "server_vad",
+          "threshold": 0.7,
+          "prefix_padding_ms": 150,
+          "silence_duration_ms": 200,
+        },
+        "input_audio_noise_reduction": {
+          "type": "near_field"
+        }
+      }
+    }
+
+    this.ws.on('open', () => {
+      this.isOpen = true;
+      console.log('OpenAI Translation: Connected');
+      this.ws.send(JSON.stringify(config));
+    });
+
+    this.ws.on('message', (message) => {
+      const parsed = JSON.parse(message.toString());
+      const type = parsed.type;
+      if(type === "conversation.item.input_audio_transcription.completed"){
+        const transcription = parsed.transcript;
+        this.emit('transcription', transcription);
+      }
+    });
+
+    this.ws.on('close', () => {
+      this.isOpen = false;
+      console.log('OpenAI Translation: Closed');
+    });
+
+    this.ws.on('error', (error) => {
+      this.isOpen = false;
+      console.log('OpenAI Translation: Error', error);
+    });
+  }
+
+
+  sendAudio(payload) {
+    if (this.isOpen) {
+    this.ws.send(JSON.stringify({
+        "type": "input_audio_buffer.append",
+        "audio": payload  // base64 encoded audio
+      }));
+    }
+  }
+
+  close() {
+    this.ws.close();
+  }
+}

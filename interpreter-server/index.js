@@ -39,7 +39,7 @@ config.config({path: '.env.local'});
 import { azureService } from './services/azureService.js';
 import { textToSpeechDeepgram, textToSpeechSmallest, textToSpeechCartesia, textToSpeechElevenLabsWS, textToSpeechPlayHTWS, textToSpeechOpenRealtime } from './services/ttsService.js';
 import WebSocket from 'ws';
-import { SpeechmaticsTranscriptionService, TranscriptionService } from './services/translationService.js';
+import { SpeechmaticsTranscriptionService, TranscriptionService, OpenAiTranslationService } from './services/translationService.js';
 import { PipeLineService } from './services/pipeLineService.js';
 const app = express();
 expressWs(app);
@@ -99,6 +99,69 @@ const deepgramLanguages = {
 };
 
 
+const openaiLanguage = {
+  afrikaans: "af",
+  arabic: "ar",
+  azerbaijani: "az",
+  belarusian: "be",
+  bulgarian: "bg",
+  bosnian: "bs",
+  catalan: "ca",
+  czech: "cs",
+  welsh: "cy",
+  danish: "da",
+  german: "de",
+  greek: "el",
+  english: "en",
+  spanish: "es",
+  estonian: "et",
+  persian: "fa",
+  finnish: "fi",
+  french: "fr",
+  galician: "gl",
+  hebrew: "he",
+  hindi: "hi",
+  croatian: "hr",
+  hungarian: "hu",
+  armenian: "hy",
+  indonesian: "id",
+  icelandic: "is",
+  italian: "it",
+  hebrew_alt: "iw",
+  japanese: "ja",
+  kazakh: "kk",
+  kannada: "kn",
+  korean: "ko",
+  lithuanian: "lt",
+  latvian: "lv",
+  maori: "mi",
+  macedonian: "mk",
+  marathi: "mr",
+  malay: "ms",
+  nepali: "ne",
+  dutch: "nl",
+  norwegian: "no",
+  polish: "pl",
+  portuguese: "pt",
+  romanian: "ro",
+  russian: "ru",
+  slovak: "sk",
+  slovenian: "sl",
+  serbian: "sr",
+  swedish: "sv",
+  swahili: "sw",
+  tamil: "ta",
+  thai: "th",
+  tagalog: "tl",
+  turkish: "tr",
+  ukrainian: "uk",
+  urdu: "ur",
+  vietnamese: "vi",
+  chinese: "zh",
+};
+
+
+
 
 app.ws('/interpreter', (ws, req) => {
   const query = req.query;
@@ -134,11 +197,10 @@ app.ws('/interpreter', (ws, req) => {
     }else if(ttsService === "playht"){
       ttsRef = textToSpeechPlayHTWS(rtmpPusher,{voice_id: voice || "s3://voice-cloning-zero-shot/775ae416-49bb-4fb6-bd45-740f205d20a1/jennifersaad/manifest.json", apiKey: apiKey,language: languageToCode[language]});
     }else if(ttsService === "openrealtime"){
-      // ttsRef = textToSpeechOpenRealtime(rtmpPusher,{voice_id: voice || "alloy", apiKey: apiKey,language: languageToCode[language], instructions: instructions, sourceLanguage});
-       
-      sttRef = new TranscriptionService(deepgramLanguages[sourceLanguage])
+      // ttsRef = textToSpeechOpenRealtime(rtmpPusher,{voice_id: voice || "alloy", apiKey: apiKey,language: languageToCode[language], instructions: instructions, sourceLanguage});   
+      sttRef = new OpenAiTranslationService(openaiLanguage[sourceLanguage], instructions)
       ttsRef = textToSpeechElevenLabsWS(rtmpPusher,{voice_id: "JBFqnCBsd6RMkjVDRZzb", apiKey: apiKey,language: languageToCode[language]});
-      pipeLineRef = new PipeLineService(ttsRef, sttRef, sourceLanguage, language);
+      pipeLineRef = new PipeLineService(ttsRef, sttRef, sourceLanguage, language, ws);
     }else if(ttsService === "azure"){
       try{
         ttsRef = azureService(rtmpPusher,{fromLang: languageToCode[sourceLanguage],ttsLang: languageToCode[language]});
