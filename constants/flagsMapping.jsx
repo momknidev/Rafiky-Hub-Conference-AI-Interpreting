@@ -30,11 +30,11 @@ export const languages = [
     //     value: 'german',
     //     flag: '/flags/de.svg',
     // },
-    // {
-    //     name: 'FRENCH',
-    //     value: 'french',
-    //     flag: '/flags/fr.svg',
-    // },
+    {
+        name: 'FRENCH',
+        value: 'french',
+        flag: '/flags/fr.svg',
+    },
     // {
     //     name: 'SPANISH',
     //     value: 'spanish',
@@ -99,11 +99,11 @@ export const sourceLanguages = [
     //     value: 'german',
     //     flag: '/flags/de.svg',
     // },
-    // {
-    //     name: 'FRENCH',
-    //     value: 'french',
-    //     flag: '/flags/fr.svg',
-    // },
+    {
+        name: 'FRENCH',
+        value: 'french',
+        flag: '/flags/fr.svg',
+    },
     // {
     //     name: 'SPANISH',
     //     value: 'spanish',

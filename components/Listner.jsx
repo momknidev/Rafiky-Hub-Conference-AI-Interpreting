@@ -13,6 +13,7 @@ import { flagsMapping } from '@/constants/flagsMapping';
 import { LanguageBotMap, codeToLanguage, defaultData, intrepreterUids , textMessages} from '@/constants/captionUIDs';
 import { usePrototype } from '@/hooks/usePrototype';
 import { v4 as uuidv4 } from 'uuid';
+import { removePunctuation } from '@/utils/removePunctuation';
 
 // 🚨 CRITICAL: Browser compatibility detection
 const getBrowserInfo = () => {
@@ -572,7 +573,8 @@ const Listner = () => {
               console.log(language, "language");
               console.log(lang, "lang");
               // subTitleRef.current = uuidv4();
-              setSubtitles(prev => [...prev, { uuid: subTitleRef.current, text: msg?.trans[0]?.texts[0], isFinal: msg?.trans[0]?.isFinal }]);
+              const text = removePunctuation(msg?.trans[0]?.texts[0]);
+              setSubtitles(prev => [...prev, { uuid: subTitleRef.current, text: text || msg?.trans[0]?.texts[0], isFinal: msg?.trans[0]?.isFinal }]);
             }
           }
         }

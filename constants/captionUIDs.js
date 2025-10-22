@@ -46,7 +46,7 @@ export const interpreters = [
     "english",
     // "russian",
     "italian",
-    // "french",
+    "french",
     // "spanish",
     // "german",
 ]
@@ -148,7 +148,7 @@ export const textMessages = {
     german: `Zu Beginn der Masterclass verschwindet die Meldung “Waiting for Broadcaster”. Danach erscheint die Schaltfläche “Start Listening” – klicken Sie darauf, um die Live-Übersetzung zu hören.`,
     french: `Au début de la Masterclass, le message “Waiting for Broadcaster” disparaîtra. Le bouton “Start Listening” apparaîtra ensuite : cliquez dessus pour commencer à écouter la traduction en direct.`,
     spanish: `Al comienzo de la Masterclass, desaparecerá el mensaje “Waiting for Broadcaster”. A continuación aparecerá el botón “Start Listening”; haz clic en él para escuchar la traducción en directo.`,
-    italian: `Aspetta il diffusore - il pulsante “Start Listening” apparirà. Clicca su “Start Listening” per iniziare a ascoltare la traduzione.`,
+    italian: `Non appena inizierà la traduzione, la dicitura "Waiting for broadcasting" verrà sostituita dal pulsante "Start Listening". Clicca su "Start Listening" per ascoltare la traduzione.`,
     portuguese: `Aguarde o transmissor - o botão “Start Listening” aparecerá. Clique em “Start Listening” para começar a ouvir a tradução.`,
 }
 
